@@ -37,8 +37,8 @@ def getMousePos(event, x, y, flags, param):
 
 cv.setMouseCallback(name, getMousePos)
 
-
-colorBounds = ([80, 60, 60], [150, 150, 150])
+# HSV color bounds
+colorBounds = ([-10, 50, 50], [10, 255, 255])
 
 key = -1
 
@@ -53,7 +53,7 @@ while key != ESC:
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-    mask = cv.inRange(frame, lower, upper)
+    mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(maskedImg, cv.COLOR_BGR2GRAY)
@@ -121,12 +121,17 @@ while key != ESC:
 
     cursorBGR = [-1, -1, -1]
     if mouseX != None and mouseX < len(frame[0]):
+        cursorHSV = hsvFrame[mouseY][mouseX]
         cursorBGR = frame[mouseY][mouseX]
 
     if cursorBGR[0] != -1:
-        colorString = "R: " + str(cursorBGR[2]) + " G: " + \
+        rgbString = "R: " + str(cursorBGR[2]) + " G: " + \
             str(cursorBGR[1]) + " B: " + str(cursorBGR[0])
-        cv.putText(frame, colorString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+
+        hsvString = "H: " + str(cursorHSV[0]) + " S: " + \
+            str(cursorHSV[1]) + " V: " + str(cursorHSV[2])
+        # hsvString = "H: " + str(cursorHSV[0]) + " S: " + \ str(cursorBGR[1]) + " B: " + str(cursorBGR[0])
+        cv.putText(frame, hsvString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
     cv.imshow(name, np.hstack([frame, cv.cvtColor(threshed, cv.COLOR_GRAY2BGR)]))
