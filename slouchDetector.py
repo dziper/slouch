@@ -9,9 +9,13 @@ import pymsgbox
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
 
 ESC = 27
+
+SLOUCH_THRESH = 5
+SLOUCH_TIMER = 5
+MAX_COUNTOUR_SIZE = 800
+
 centerAngle = 54
-slouchThresh = 5
-slouchTimer = 5
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
 args = vars(ap.parse_args())
@@ -88,7 +92,7 @@ while key != ESC:
         box = np.int0(box1)
         boxArea = cv.contourArea(box)
 
-        if boxArea < 800:
+        if boxArea < MAX_COUNTOUR_SIZE:
             continue
 
         angle = rect[2]
@@ -108,7 +112,7 @@ while key != ESC:
         cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
                     cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
-        if (distFromCenter > slouchThresh):
+        if (distFromCenter > SLOUCH_THRESH):
             # detected slouch
             if startTime == None:
                 startTime = currTime
@@ -149,7 +153,7 @@ while key != ESC:
         centerAngle = angleBetween
 
     if startTime != None:
-        if (currTime-startTime).total_seconds() > slouchTimer:
+        if (currTime-startTime).total_seconds() > SLOUCH_TIMER:
             # pymsgbox.alert("Stop slouching!", "Hey!")
             pass
 
