@@ -1,3 +1,4 @@
+# open cv HSV Color bounds: 0-360, 0-255, 0-255
 def rgbToHsv(color):
     R=color[0]
     G=color[1]
@@ -29,12 +30,12 @@ def rgbToHsv(color):
             v=mx
 
 
-    return (h,s,v)
+    return (h,s*255,v*255)
 
 def hsvToRgb(color):
     h = color[0]
-    s = color[1]
-    v = color[2]
+    s = color[1]/255
+    v = color[2]/255
 
     h=h%360
 

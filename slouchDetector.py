@@ -37,8 +37,10 @@ def getMousePos(event, x, y, flags, param):
 
 cv.setMouseCallback(name, getMousePos)
 
+(grabbed, frame) = stream.read()
+print("frame shape: " + str(frame.shape))
 # HSV color bounds
-colorBounds = ([-10, 50, 50], [10, 255, 255])
+colorBounds = ([0, 100, 200], [10, 255, 255])
 
 key = -1
 
@@ -86,7 +88,7 @@ while key != ESC:
         box = np.int0(box1)
         boxArea = cv.contourArea(box)
 
-        if boxArea < 1500:
+        if boxArea < 800:
             continue
 
         angle = rect[2]
@@ -102,6 +104,10 @@ while key != ESC:
         # can see two contours
         angleBetween = np.abs(contAngles[0] - contAngles[1])
         distFromCenter = np.abs(angleBetween - centerAngle)
+
+        cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
+                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+
         if (distFromCenter > slouchThresh):
             # detected slouch
             if startTime == None:
