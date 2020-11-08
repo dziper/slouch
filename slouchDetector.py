@@ -4,17 +4,22 @@ import imutils
 import numpy as np
 import datetime
 import pymsgbox
+import copy
 
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
-
-ESC = 27
 
 SLOUCH_THRESH = 5
 SLOUCH_TIMER = 5
 MAX_COUNTOUR_SIZE = 800
 
+ESC = 27
+P_KEY = 112
+C_KEY = 99
+S_KEY = 115
+
 centerAngle = 54
+togglePause = False
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -42,6 +47,8 @@ def getMousePos(event, x, y, flags, param):
 cv.setMouseCallback(name, getMousePos)
 
 (grabbed, frame) = stream.read()
+cleanFrame = copy.deepcopy(frame)
+
 print("frame shape: " + str(frame.shape))
 # HSV color bounds
 colorBounds = ([0, 100, 200], [10, 255, 255])
@@ -51,9 +58,18 @@ key = -1
 startTime = None
 currTime = None
 
+
 while key != ESC:
     currTime = datetime.datetime.now()
-    (grabbed, frame) = stream.read()
+
+
+    if not togglePause:
+        (grabbed, frame) = stream.read()
+        cleanFrame = copy.deepcopy(frame)
+
+    if togglePause:
+        frame = copy.deepcopy(cleanFrame)
+
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
@@ -140,17 +156,39 @@ while key != ESC:
 
         hsvString = "H: " + str(cursorHSV[0]) + " S: " + \
             str(cursorHSV[1]) + " V: " + str(cursorHSV[2])
-        # hsvString = "H: " + str(cursorHSV[0]) + " S: " + \ str(cursorBGR[1]) + " B: " + str(cursorBGR[0])
-        cv.putText(frame, hsvString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
+        mouseString = "X: " + str(mouseX) + " Y: " + str(mouseY)
+
+        cv.putText(frame, hsvString, (10, 660), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv.putText(frame, rgbString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
+        cv.putText(frame, mouseString, (10, 700), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
     cv.imshow(name, np.hstack([frame, cv.cvtColor(threshed, cv.COLOR_GRAY2BGR)]))
     # cv.imshow(name, frame)
 
-    if key == 99:
+    if key == C_KEY:
         # if user presses C
         print("calibrated current angle")
         centerAngle = angleBetween
+
+    if key == P_KEY:
+        # if user presses P
+        print("play/pause")
+        togglePause = not togglePause
+
+    if key == S_KEY:
+        ds = str(currTime)
+        cutString = ds[0:10] + "-" + ds[11:19]
+        dateString = cutString.replace(":", "-")
+        cleanFile = "dataImages/Clean/"+"Clean"+dateString+".jpg"
+        overlayFile = "dataImages/Overlay/"+"Overlay"+dateString+".jpg"
+
+        cv.imwrite(cleanFile, cleanFrame)
+        print("Saving Clean Frame in " + cleanFile)
+        cv.imwrite(overlayFile, frame)
+        print("Saving Overlay Frame in " + overlayFile)
+
+
 
     if startTime != None:
         if (currTime-startTime).total_seconds() > SLOUCH_TIMER:
