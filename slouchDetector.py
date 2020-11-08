@@ -1,4 +1,4 @@
-import cv2
+import cv2 as cv
 import argparse
 import imutils
 import numpy as np
@@ -16,12 +16,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
 args = vars(ap.parse_args())
 
-#cv2.imshow("Image", image)
+#cv.imshow("Image", image)
 
-stream = cv2.VideoCapture(args["source"])
+stream = cv.VideoCapture(args["source"])
 # boundaries for photo.png
 name = "frames"
-cv2.namedWindow(name)
+cv.namedWindow(name)
 
 # set up mouse movement detection
 mouseX = None
@@ -30,12 +30,12 @@ mouseY = None
 
 def getMousePos(event, x, y, flags, param):
     global mouseX, mouseY
-    if event == cv2.EVENT_MOUSEMOVE:
+    if event == cv.EVENT_MOUSEMOVE:
         mouseX = x
         mouseY = y
 
 
-cv2.setMouseCallback(name, getMousePos)
+cv.setMouseCallback(name, getMousePos)
 
 
 colorBounds = ([80, 60, 60], [150, 150, 150])
@@ -51,22 +51,22 @@ while key != ESC:
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
-    hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
-    mask = cv2.inRange(frame, lower, upper)
+    mask = cv.inRange(frame, lower, upper)
     # returns black and white mask
-    maskedImg = cv2.bitwise_and(frame, frame, mask=mask)
-    gray = cv2.cvtColor(maskedImg, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-    threshed = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+    maskedImg = cv.bitwise_and(frame, frame, mask=mask)
+    gray = cv.cvtColor(maskedImg, cv.COLOR_BGR2GRAY)
+    blurred = cv.GaussianBlur(gray, (7, 7), 0)
+    threshed = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]
 
-    contours = cv2.findContours(threshed.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = cv.findContours(threshed.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
 
     contAngles = []
 
     for cont in contours:
-        M = cv2.moments(cont)
+        M = cv.moments(cont)
         if M["m00"] == 0:
             continue
 
@@ -79,12 +79,12 @@ while key != ESC:
         contHeight = extBottom[1] - extTop[1]
         contArea = contWidth * contHeight
 
-        contArea = cv2.contourArea(cont)
+        contArea = cv.contourArea(cont)
 
-        rect = cv2.minAreaRect(cont)
-        box1 = cv2.boxPoints(rect)
+        rect = cv.minAreaRect(cont)
+        box1 = cv.boxPoints(rect)
         box = np.int0(box1)
-        boxArea = cv2.contourArea(box)
+        boxArea = cv.contourArea(box)
 
         if boxArea < 1500:
             continue
@@ -94,9 +94,9 @@ while key != ESC:
 
         cX = int(M["m10"]/M["m00"])
         cY = int(M["m01"]/M["m00"])
-        cv2.circle(frame, (cX, cY), 3, (0, 0, 255), -1)
-        cv2.drawContours(frame, [cont], -1, (255, 255, 255), 2)
-        cv2.drawContours(frame, [box], -1, (0, 255, 255), 2)
+        cv.circle(frame, (cX, cY), 3, (0, 0, 255), -1)
+        cv.drawContours(frame, [cont], -1, (255, 255, 255), 2)
+        cv.drawContours(frame, [box], -1, (0, 255, 255), 2)
 
     if(len(contAngles) > 1):
         # can see two contours
@@ -106,18 +106,18 @@ while key != ESC:
             # detected slouch
             if startTime == None:
                 startTime = currTime
-            cv2.circle(frame, (30, 30), 10, (0, 150 - distFromCenter, 150 + distFromCenter), -1)
-            cv2.putText(frame, "Stop slouching!", (10, 25),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+            cv.circle(frame, (30, 30), 10, (0, 150 - distFromCenter, 150 + distFromCenter), -1)
+            cv.putText(frame, "Stop slouching!", (10, 25),
+                        cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
         else:
             startTime = None
-            cv2.circle(frame, (30, 30), 10, (0, 255, 0), -1)
+            cv.circle(frame, (30, 30), 10, (0, 255, 0), -1)
 
     else:
         # can't find contours
         startTime = None
-        cv2.putText(frame, "Can't find contours!", (10, 25),
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
+        cv.putText(frame, "Can't find contours!", (10, 25),
+                    cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
 
     cursorBGR = [-1, -1, -1]
     if mouseX != None and mouseX < len(frame[0]):
@@ -126,11 +126,11 @@ while key != ESC:
     if cursorBGR[0] != -1:
         colorString = "R: " + str(cursorBGR[2]) + " G: " + \
             str(cursorBGR[1]) + " B: " + str(cursorBGR[0])
-        cv2.putText(frame, colorString, (10, 680), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+        cv.putText(frame, colorString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
-    cv2.imshow(name, np.hstack([frame, cv2.cvtColor(threshed, cv2.COLOR_GRAY2BGR)]))
-    # cv2.imshow(name, frame)
+    cv.imshow(name, np.hstack([frame, cv.cvtColor(threshed, cv.COLOR_GRAY2BGR)]))
+    # cv.imshow(name, frame)
 
     if key == 99:
         # if user presses C
@@ -142,7 +142,7 @@ while key != ESC:
             # pymsgbox.alert("Stop slouching!", "Hey!")
             pass
 
-    key = cv2.waitKey(1) & 0xFF
+    key = cv.waitKey(1) & 0xFF
 
 
-cv2.destroyAllWindows()
+cv.destroyAllWindows()
