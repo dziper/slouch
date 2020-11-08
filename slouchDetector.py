@@ -6,7 +6,7 @@ import datetime
 import pymsgbox
 
 # need this line or else get weird abort when you run another popup
-pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
+# pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
 
 ESC = 27
 centerAngle = 54
