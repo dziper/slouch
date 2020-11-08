@@ -38,7 +38,7 @@ def getMousePos(event, x, y, flags, param):
 cv2.setMouseCallback(name, getMousePos)
 
 
-greenBounds = ([80, 60, 60], [150, 150, 150])
+colorBounds = ([80, 60, 60], [150, 150, 150])
 
 key = -1
 
@@ -48,13 +48,15 @@ currTime = None
 while key != ESC:
     currTime = datetime.datetime.now()
     (grabbed, frame) = stream.read()
-    lower = np.array(greenBounds[0], dtype="uint8")
-    upper = np.array(greenBounds[1], dtype="uint8")
+    lower = np.array(colorBounds[0], dtype="uint8")
+    upper = np.array(colorBounds[1], dtype="uint8")
+
+    hsvFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(frame, lower, upper)
     # returns black and white mask
-    greenImg = cv2.bitwise_and(frame, frame, mask=mask)
-    gray = cv2.cvtColor(greenImg, cv2.COLOR_BGR2GRAY)
+    maskedImg = cv2.bitwise_and(frame, frame, mask=mask)
+    gray = cv2.cvtColor(maskedImg, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (7, 7), 0)
     threshed = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
 
@@ -137,7 +139,8 @@ while key != ESC:
 
     if startTime != None:
         if (currTime-startTime).total_seconds() > slouchTimer:
-            pymsgbox.alert("Stop slouching!", "Hey!")
+            # pymsgbox.alert("Stop slouching!", "Hey!")
+            pass
 
     key = cv2.waitKey(1) & 0xFF
 
