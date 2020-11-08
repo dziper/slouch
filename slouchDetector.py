@@ -21,6 +21,9 @@ S_KEY = 115
 centerAngle = 54
 togglePause = False
 
+# HSV color bounds
+colorBounds = ([0, 100, 200], [10, 255, 255])
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
 args = vars(ap.parse_args())
@@ -50,8 +53,8 @@ cv.setMouseCallback(name, getMousePos)
 cleanFrame = copy.deepcopy(frame)
 
 print("frame shape: " + str(frame.shape))
-# HSV color bounds
-colorBounds = ([0, 100, 200], [10, 255, 255])
+
+
 
 key = -1
 
