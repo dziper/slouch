@@ -152,6 +152,8 @@ while key != ESC:
     if mouseX != None and mouseX < len(frame[0]):
         cursorHSV = hsvFrame[mouseY][mouseX]
         cursorBGR = frame[mouseY][mouseX]
+    else:
+        cv.putText(frame, "cant find mouse", (10, 660), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
     if cursorBGR[0] != -1:
         rgbString = "R: " + str(cursorBGR[2]) + " G: " + \
