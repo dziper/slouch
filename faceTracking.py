@@ -1,4 +1,4 @@
-#https://www.guidodiepen.nl/2017/02/detecting-and-tracking-a-face-with-python-and-opencv/
+#Tutorial: https://www.guidodiepen.nl/2017/02/detecting-and-tracking-a-face-with-python-and-opencv/
 
 #Import the OpenCV library
 import cv2
@@ -70,7 +70,10 @@ while True:
 
     #Loop over all faces and check if the area for this face is
     #the largest so far
-    for (_x,_y,_w,_h) in faces:
+    bigFace = None
+    largestArea = -1
+    for face in faces:
+        (_x,_y,_w,_h) = face
         if  _w*_h > maxArea:
             x = _x
             y = _y
@@ -80,10 +83,13 @@ while True:
 
         #If one or more faces are found, draw a rectangle around the
         #largest face present in the picture
-        if maxArea > 0 :
-            cv2.rectangle(resultImage,  (x-10, y-20),(x + w+10 , y + h+20),rectangleColor,2)
+        if maxArea > largestArea:
+            largestArea = maxArea
+            bigFace = face
 
 
+    if largestArea > 0:
+        cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
     #Since we want to show something larger on the screen than the
     #original 320x240, we resize the image again
