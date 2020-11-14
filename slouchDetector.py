@@ -21,6 +21,8 @@ S_KEY = 115
 centerAngle = 54
 togglePause = False
 
+getMinY = None
+
 # HSV color bounds
 colorBounds = ([0, 100, 200], [10, 255, 255])
 
@@ -54,17 +56,16 @@ cleanFrame = copy.deepcopy(frame)
 
 print("frame shape: " + str(frame.shape))
 
-
-
 key = -1
 
 startTime = None
 currTime = None
 
+if not frame.size == 0:
+    getMinY = frame[0,0,0]
 
 while key != ESC:
     currTime = datetime.datetime.now()
-
 
     if not togglePause:
         (grabbed, frame) = stream.read()
@@ -164,9 +165,9 @@ while key != ESC:
 
         mouseString = "X: " + str(mouseX) + " Y: " + str(mouseY)
 
-        cv.putText(frame, hsvString, (10, 660), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv.putText(frame, rgbString, (10, 680), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
-        cv.putText(frame, mouseString, (10, 700), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
+        cv.putText(frame, hsvString, (10, getMinY + 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv.putText(frame, rgbString, (10, getMinY + 35), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
+        cv.putText(frame, mouseString, (10, getMinY + 55), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
     cv.imshow(name, np.hstack([frame, cv.cvtColor(threshed, cv.COLOR_GRAY2BGR)]))
     # cv.imshow(name, frame)
