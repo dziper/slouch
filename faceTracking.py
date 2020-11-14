@@ -4,6 +4,7 @@
 import cv2
 import numpy as np
 from scipy import stats;
+import math
 
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the OpenCV2 library
@@ -54,6 +55,10 @@ def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, se
     if(max_values.sum() < top_values_to_consider): return None; # return none if no large gradient exists - probably no shoulder in the range
     weighted_indicies = (max_indicies * max_values);
     weighted_average_index = weighted_indicies.sum() / max_values.sum();
+
+    if math.isnan(weighted_average_index):
+        return None
+
     index = int(weighted_average_index);
     index = y + index;
     return index;
@@ -61,10 +66,12 @@ def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, se
 def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
+    HEIGHT_MULTIPLIER = 1
+
     # define shoulder box componenets
     w = int(x_scale * w_face);
     h = int(y_scale * h_face);
-    y = y_face + h_face * 3/4; # half way down head position
+    y = y_face + h_face * HEIGHT_MULTIPLIER; # half way down head position
     if(direction == "right"): x = x_face + w_face - w / 20; # right end of the face box
     if(direction == "left"): x = x_face - w + w/20; # w to the left of the start of face box
     rectangle = (x, y, w, h);
@@ -76,8 +83,8 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
         this_x = x + delta_x;
         this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
         if(this_y is None): continue; # dont add if no clear best value
-        x_positions.append(this_x);
-        y_positions.append(this_y);
+        x_positions.append(int(this_x));
+        y_positions.append(int(this_y));
 
     # extract line from positions
     #line = [(x_positions[5], y_positions[5]), (x_positions[-10], y_positions[-10])];
@@ -86,6 +93,7 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
         lines.append((x_positions[index], y_positions[index]));
 
     # extract line of best fit from lines
+
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
     line_y0 = int(x_positions[0] * slope + intercept)
     line_y1 = int(x_positions[-1] * slope + intercept);
@@ -98,7 +106,14 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     # return rectangle and positions
     return line, lines, rectangle, value;
 
-
+def draw_line_onto_image(img, line, color="GREEN"):
+    beginning = line[0];
+    end = line[1];
+    if(color=="GREEN"): color = (0, 255, 0);
+    if(color=="BLUE"): color = (255, 0, 0);
+    if(color=="RED"): color = (0, 0, 255);
+    cv2.line(img, beginning, end, color, 2)
+    return img;
 
 while True:
     #Retrieve the latest image from the webcam
@@ -162,17 +177,22 @@ while True:
     if largestArea > 0:
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
-        (line, lines, rectangle, value) = detect_shoulder(gray, bigFace, "right")
-        print("line: ")
-        print(line)
-        print("lines: ")
-        print(lines)
-        print("rectangle: ")
-        print(rectangle)
-        print("value: ")
-        print(value)
+        (right_line, right_lines, right_rectangle, right_value) = detect_shoulder(gray, bigFace, "right")
+        (left_line, left_lines, left_rectangle, left_value) = detect_shoulder(gray, bigFace, "left")
+        draw_line_onto_image(resultImage, right_line)
+        draw_line_onto_image(resultImage, left_line)
 
-        cv2.line(resultImage, line[0], line[1], (255, 0, 0), 3)
+
+        # print("line: ")
+        # print(line)
+        # print("lines: ")
+        # print(lines)
+        # print("rectangle: ")
+        # print(rectangle)
+        # print("value: ")
+        # print(value)
+
+
 
 
     #Since we want to show something larger on the screen than the
