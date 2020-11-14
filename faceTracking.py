@@ -2,6 +2,8 @@
 
 #Import the OpenCV library
 import cv2
+import numpy as np
+from scipy import stats;
 
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the OpenCV2 library
@@ -29,7 +31,21 @@ rectangleColor = (0,165,255)
 
 
 def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, search_width = 20):
-    columns = img_gray[y:y+h, x-search_width/2:x+search_width/2];
+    # print("img_gray: ")
+    # print(img_gray)
+    # print("x: ")
+    # print(x)
+    # print("y: ")
+    # print(y)
+    # print("h: ")
+    # print(h)
+
+    # print(y+h)
+    # print(x-search_width/2)
+    # print(x+search_width/2)
+
+    columns = img_gray[int(y):int(y+h), int(x-search_width/2):int(x+search_width/2)];
+
     column_average = columns.mean(axis=1);
     gradient = np.gradient(column_average, 3);
     gradient = np.absolute(gradient); # abs gradient value
@@ -73,7 +89,7 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
     line_y0 = int(x_positions[0] * slope + intercept)
     line_y1 = int(x_positions[-1] * slope + intercept);
-    line = [(x_positions[0], line_y0), (x_positions[-1], line_y1)];
+    line = [(int(x_positions[0]), int(line_y0)), (int(x_positions[-1]), int(line_y1))];
 
     # decide on value
     #value = intercept;
@@ -98,8 +114,6 @@ while True:
     if pressedKey == ord('Q'):
         cv2.destroyAllWindows()
         exit(0)
-
-
 
     #Result image is the image we will show the user, which is a
     #combination of the original image from the webcam and the
@@ -147,6 +161,19 @@ while True:
 
     if largestArea > 0:
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
+
+        (line, lines, rectangle, value) = detect_shoulder(gray, bigFace, "right")
+        print("line: ")
+        print(line)
+        print("lines: ")
+        print(lines)
+        print("rectangle: ")
+        print(rectangle)
+        print("value: ")
+        print(value)
+
+        cv2.line(resultImage, line[0], line[1], (255, 0, 0), 3)
+
 
     #Since we want to show something larger on the screen than the
     #original 320x240, we resize the image again
