@@ -2,4 +2,3 @@ Shape Detection and Analysis:
 https://www.pyimagesearch.com/2016/02/01/opencv-center-of-contour/
 https://www.pyimagesearch.com/2016/02/08/opencv-shape-detection/
 https://www.pyimagesearch.com/2016/02/15/determining-object-color-with-opencv/
-https://pythonprogramming.net/haar-cascade-face-eye-detection-python-opencv-tutorial/
