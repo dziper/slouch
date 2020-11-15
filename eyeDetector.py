@@ -61,16 +61,15 @@ def get_eyes():
         # cv2.putText(img, eyesLocString, (10, 660), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
     cv2.imshow('img', img)
-    return (topEye1[0]+(0.5*topEye1[2])), (topEye1[1]+(0.5*topEye1[3])), (topEye2[0]+(0.5*topEye2[2])), (topEye2[1]+(0.5*topEye2[3]))
+    return ((topEye1[0]+(0.5*topEye1[2])), (topEye1[1]+(0.5*topEye1[3]))), ((topEye2[0]+(0.5*topEye2[2])), (topEye2[1]+(0.5*topEye2[3])))
     # k = cv2.waitKey(30) & 0xff
     # if k == 27:
     #     break
 
 
 while 1:
-    eye_posX1, eye_posY1, eye_posX2, eye_posY2 = get_eyes()
-    print("x1:", eye_posX1, "y1:", eye_posY1)
-    print("x2:", eye_posX2, "y2:", eye_posY2)
+    eye_pos1, eye_pos2 = get_eyes()
+    print("1:", eye_pos1, "2:", eye_pos2)
     k = cv2.waitKey(30) & 0xff
     if k == 27:
         break
