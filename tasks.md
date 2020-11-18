@@ -4,6 +4,7 @@
   - @Aakash
 - [ ] Get slouch statistics each frame and store history. Generate a graph of some kind   
   - @Aakash
+- [ ] User alerts when slouching
 
 ## Image Processing
 - [ ] Eye Detection
@@ -16,7 +17,7 @@
   - @Daniel
 
 ## Data Collection
-- [ ] Add frame data to CSV
+- [ ] Add data to CSV
   - @Karli
 - [ ] Open source data collection?
 - [ ] Collect Data
