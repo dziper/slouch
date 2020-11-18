@@ -27,3 +27,8 @@
 - [ ] Train neural network and tune
 - [ ] Implement neural network into slouchdetector.py
 - @Daniel
+
+## Documentation
+- [ ] Actually make documentation lol
+- [ ] Readability of code
+- @Everyone
