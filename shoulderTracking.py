@@ -93,8 +93,11 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
 
     # extract line of best fit from lines
 
-    # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
-    slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
+    # slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
+
+    # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
+    # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
 
     # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
     # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
