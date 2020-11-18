@@ -5,6 +5,7 @@ import numpy as np
 import datetime
 import pymsgbox
 import copy
+from eyeDetector import get_eyes
 
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
