@@ -7,7 +7,7 @@ import cv2
 # whether cropping is being performed or not
 refPt = []
 cropping = False
-def click_and_crop(event, x, y, flags, param):
+def click_n_crop(event, x, y, flags, param):
 	# grab references to the global variables
 	global refPt, cropping
 	# if the left mouse button was clicked, record the starting
@@ -27,14 +27,15 @@ def click_and_crop(event, x, y, flags, param):
 		cv2.imshow("image", image)
 
 # construct the argument parser and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--image", required=True, help="Path to the image")
-args = vars(ap.parse_args())
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-i", "--image", required=True, help="Path to the image")
+# args = vars(ap.parse_args())
+
 # load the image, clone it, and setup the mouse callback function
-image = cv2.imread(args["image"])
+image = cv2.imread('image.jpg')
 clone = image.copy()
 cv2.namedWindow("image")
-cv2.setMouseCallback("image", click_and_crop)
+cv2.setMouseCallback("image", click_n_crop)
 # keep looping until the 'q' key is pressed
 while True:
 	# display the image and wait for a keypress
