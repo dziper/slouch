@@ -32,19 +32,6 @@ rectangleColor = (0,165,255)
 
 
 def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, search_width = 20):
-    # print("img_gray: ")
-    # print(img_gray)
-    # print("x: ")
-    # print(x)
-    # print("y: ")
-    # print(y)
-    # print("h: ")
-    # print(h)
-
-    # print(y+h)
-    # print(x-search_width/2)
-    # print(x+search_width/2)
-
     columns = img_gray[int(y):int(y+h), int(x-search_width/2):int(x+search_width/2)];
 
     column_average = columns.mean(axis=1);
@@ -63,8 +50,19 @@ def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, se
     index = y + index;
     return index;
 
+def highestWhite(img_gray, x):
+    x = int(x)
+    column = img_gray[:,x]
+    for i in range(len(column)):
+        val = column[i]
+        if val > 0:
+            return i
+    return None
+
 def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
+
+    x_scale = 0.5
 
     HEIGHT_MULTIPLIER = 1
 
@@ -72,8 +70,8 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     w = int(x_scale * w_face);
     h = int(y_scale * h_face);
     y = y_face + h_face * HEIGHT_MULTIPLIER; # half way down head position
-    if(direction == "right"): x = x_face + w_face - w / 20; # right end of the face box
-    if(direction == "left"): x = x_face - w + w/20; # w to the left of the start of face box
+    if(direction == "right"): x = x_face + 4*w_face/5; # right end of the face box
+    if(direction == "left"): x = x_face - 4*w/5; # w to the left of the start of face box
     rectangle = (x, y, w, h);
 
     # calculate position of shoulder in each x strip
@@ -81,7 +79,8 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     y_positions = [];
     for delta_x in range(w):
         this_x = x + delta_x;
-        this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
+        # this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
+        this_y = highestWhite(img_gray, this_x)
         if(this_y is None): continue; # dont add if no clear best value
         x_positions.append(int(this_x));
         y_positions.append(int(this_y));
@@ -94,7 +93,9 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
 
     # extract line of best fit from lines
 
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
+    # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
+    slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
+
     line_y0 = int(x_positions[0] * slope + intercept)
     line_y1 = int(x_positions[-1] * slope + intercept);
     line = [(int(x_positions[0]), int(line_y0)), (int(x_positions[-1]), int(line_y1))];
@@ -112,8 +113,14 @@ def draw_line_onto_image(img, line, color="GREEN"):
     if(color=="GREEN"): color = (0, 255, 0);
     if(color=="BLUE"): color = (255, 0, 0);
     if(color=="RED"): color = (0, 0, 255);
-    cv2.line(img, beginning, end, color, 2)
+    cv2.line(img, beginning, end, color, 1)
     return img;
+
+def plotPoints(img, pointList):
+    for point in pointList:
+        x = point[0]
+        y = point[1]
+        img[y,x] = (255,0,0)
 
 while True:
     #Retrieve the latest image from the webcam
@@ -177,11 +184,23 @@ while True:
     if largestArea > 0:
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
-        (right_line, right_lines, right_rectangle, right_value) = detect_shoulder(gray, bigFace, "right")
-        (left_line, left_lines, left_rectangle, left_value) = detect_shoulder(gray, bigFace, "left")
+        colorBounds = ([15, 50, 200], [25, 150, 255])
+
+        lower = np.array(colorBounds[0], dtype="uint8")
+        upper = np.array(colorBounds[1], dtype="uint8")
+
+        hsvFrame = cv2.cvtColor(baseImage, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(hsvFrame, lower, upper)
+        cv2.imshow("mask", mask)
+
+        (right_line, right_lines, right_rectangle, right_value) = detect_shoulder(mask, bigFace, "right")
+        (left_line, left_lines, left_rectangle, left_value) = detect_shoulder(mask, bigFace, "left")
         draw_line_onto_image(resultImage, right_line)
         draw_line_onto_image(resultImage, left_line)
 
+        plotPoints(resultImage, right_lines)
+        plotPoints(resultImage, left_lines)
 
         # print("line: ")
         # print(line)
