@@ -62,7 +62,7 @@ def highestWhite(img_gray, x):
 def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
-    x_scale = 0.5
+    x_scale = 0.7
 
     HEIGHT_MULTIPLIER = 1
 
@@ -95,6 +95,9 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
 
     # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
     slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
+
+    # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
+    # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
 
     line_y0 = int(x_positions[0] * slope + intercept)
     line_y1 = int(x_positions[-1] * slope + intercept);
