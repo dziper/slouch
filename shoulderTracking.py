@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from scipy import stats;
 import math
+import lineDetection
 
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the OpenCV2 library
@@ -77,40 +78,27 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     rectangle = (x, y, w, h);
 
     # calculate position of shoulder in each x strip
-    x_positions = [];
-    y_positions = [];
+    x_positions = np.array([])
+    y_positions = np.array([])
     for delta_x in range(w):
         this_x = x + delta_x;
         # this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
         this_y = highestWhite(img_gray, this_x, minY = y_face + h_face/2)
         if(this_y is None): continue; # dont add if no clear best value
-        x_positions.append(int(this_x));
-        y_positions.append(int(this_y));
+        x_positions = np.append(x_positions, int(this_x))
+        y_positions = np.append(y_positions, int(this_y))
 
     # extract line from positions
     #line = [(x_positions[5], y_positions[5]), (x_positions[-10], y_positions[-10])];
-    lines = [];
-    for index in range(len(x_positions)):
-        lines.append((x_positions[index], y_positions[index]));
+    lines = np.array([x_positions,y_positions])
 
     # extract line of best fit from lines
 
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
-    # slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
+    # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
 
-    # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
-    # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
+    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions)
 
-    line_y0 = int(x_positions[0] * slope + intercept)
-    line_y1 = int(x_positions[-1] * slope + intercept);
-    line = [(int(x_positions[0]), int(line_y0)), (int(x_positions[-1]), int(line_y1))];
-
-    # decide on value
-    #value = intercept;
-    value = np.array([line[0][1], line[1][1]]).mean();
-
-    # return rectangle and positions
-    return line, lines, rectangle, value;
+    return line, slope, lines
 
 def draw_line_onto_image(img, line, color="GREEN"):
     beginning = line[0];
@@ -121,11 +109,11 @@ def draw_line_onto_image(img, line, color="GREEN"):
     cv2.line(img, beginning, end, color, 1)
     return img;
 
-def plotPoints(img, pointList):
+def plotPoints(img, pointList, color = (0,0,255)):
     for point in pointList:
-        x = point[0]
-        y = point[1]
-        img[y,x] = (0,0,255)
+        x = int(point[0])
+        y = int(point[1])
+        img[y,x] = color
 
 while True:
     #Retrieve the latest image from the webcam
@@ -199,13 +187,16 @@ while True:
         mask = cv2.inRange(hsvFrame, lower, upper)
         cv2.imshow("mask", mask)
 
-        (right_line, right_lines, right_rectangle, right_value) = detect_shoulder(mask, bigFace, "right")
-        (left_line, left_lines, left_rectangle, left_value) = detect_shoulder(mask, bigFace, "left")
-        draw_line_onto_image(resultImage, right_line)
-        draw_line_onto_image(resultImage, left_line)
+        right_line, right_slope, right_points = detect_shoulder(mask, bigFace, "right")
+        left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
 
-        plotPoints(resultImage, right_lines)
-        plotPoints(resultImage, left_lines)
+        print(right_line)
+
+        plotPoints(resultImage, right_line,color=(0,255,0))
+        plotPoints(resultImage, left_line, color=(0,255,0))
+
+        plotPoints(resultImage, right_points)
+        plotPoints(resultImage, left_points)
 
         # print("line: ")
         # print(line)
