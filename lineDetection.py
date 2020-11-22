@@ -10,7 +10,8 @@ def tryLine(x,y,low,high, plot = False, getLine = False):
     y_slice = y[int(totalLength*low):int(totalLength*high)]
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_slice,y_slice)
     corrCoeff = r_value ** 2
-    line = intercept + slope * x_slice
+    x_points = intercept + slope * x_slice
+    line = np.stack((x_points, y_slice), axis=-1)
     # print("low {} high {} corr {}".format(low,high,corrCoeff))
 
     if plot:
@@ -74,3 +75,5 @@ def findBestFit(x,y,low=0.35,high=0.65):
     high = high - change
     if high < low or high > 1:
         high = 1
+
+    return tryLine(x,y,low,high,getLine = True)
