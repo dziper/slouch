@@ -13,6 +13,7 @@ faceCascade = cv2.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
 #The deisred output width and height
 OUTPUT_SIZE_WIDTH = 775
 OUTPUT_SIZE_HEIGHT = 600
+colorBounds = ([100, 60, 70], [120, 120, 200])
 
 #Open the first webcame device
 capture = cv2.VideoCapture(0)
@@ -50,13 +51,14 @@ def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, se
     index = y + index;
     return index;
 
-def highestWhite(img_gray, x):
+def highestWhite(img_gray, x, minY = 0):
     x = int(x)
-    column = img_gray[:,x]
+    minY = int(minY)
+    column = img_gray[minY:,x]
     for i in range(len(column)):
         val = column[i]
         if val > 0:
-            return i
+            return i+minY
     return None
 
 def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
@@ -69,7 +71,7 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     # define shoulder box componenets
     w = int(x_scale * w_face);
     h = int(y_scale * h_face);
-    y = y_face + h_face * HEIGHT_MULTIPLIER; # half way down head position
+    y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
     if(direction == "right"): x = x_face + 4*w_face/5; # right end of the face box
     if(direction == "left"): x = x_face - 4*w/5; # w to the left of the start of face box
     rectangle = (x, y, w, h);
@@ -80,7 +82,7 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     for delta_x in range(w):
         this_x = x + delta_x;
         # this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
-        this_y = highestWhite(img_gray, this_x)
+        this_y = highestWhite(img_gray, this_x, minY = y_face + h_face/2)
         if(this_y is None): continue; # dont add if no clear best value
         x_positions.append(int(this_x));
         y_positions.append(int(this_y));
@@ -95,9 +97,6 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
     # slope, intercept, lo_slope, up_slope = stats.mstats.theilslopes(y_positions, x_positions)
-
-    # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
-    # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
 
     # @TODO: try multiple lines across the range of x_positions and see which has highest confidence.
     # The main issue is detecting arm, not shoulder AND detecting shirt neck hole
@@ -126,7 +125,7 @@ def plotPoints(img, pointList):
     for point in pointList:
         x = point[0]
         y = point[1]
-        img[y,x] = (255,0,0)
+        img[y,x] = (0,0,255)
 
 while True:
     #Retrieve the latest image from the webcam
@@ -190,7 +189,7 @@ while True:
     if largestArea > 0:
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
-        colorBounds = ([15, 50, 200], [25, 150, 255])
+
 
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
