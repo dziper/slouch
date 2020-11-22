@@ -193,7 +193,7 @@ while True:
         left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
 
         print(right_slope)
-        print(right_line[:10])
+        print(right_line[:20])
 
         plotPoints(resultImage, right_line,color=(0,255,0))
         plotPoints(resultImage, left_line, color=(0,255,0))
