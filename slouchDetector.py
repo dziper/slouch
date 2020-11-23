@@ -24,7 +24,7 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([170, 100, 15], [185, 180, 170])
+colorBounds = ([170, 90, 15], [185, 190, 200])
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -104,7 +104,7 @@ while key != ESC:
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
-    eyeLoc1, eyeLoc2 = get_eyes(frame)
+    # eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -117,15 +117,22 @@ while key != ESC:
 
     cv.imshow("mask", mask)
 
-    # shoulderData = detectShoulders(gray, mask)
+    shoulderData = detectShoulders(gray, mask)
     shoulderData = None
     noShoulderData = False
     if shoulderData is None:
         noShoulderData = True
     else:
         right_line, right_slope, left_line, left_slope = shoulderData
-        plotPoints(frame, right_line)
-        plotPoints(frame, left_line)
+
+        right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
+        right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
+        frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
+
+        left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
+        left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
+        frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
+
         print(right_slope)
         print(left_slope)
 
