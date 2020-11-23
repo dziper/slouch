@@ -117,7 +117,8 @@ while key != ESC:
 
     cv.imshow("mask", mask)
 
-    shoulderData = detectShoulders(gray, mask)
+    # shoulderData = detectShoulders(gray, mask)
+    shoulderData = None
     noShoulderData = False
     if shoulderData is None:
         noShoulderData = True
@@ -132,9 +133,6 @@ while key != ESC:
     contours = imutils.grab_contours(contours)
 
     contAngles = []
-
-
-    countours = None
 
     for cont in contours:
         M = cv.moments(cont)
