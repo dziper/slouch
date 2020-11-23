@@ -24,7 +24,7 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([170, 100, 15], [180, 180, 100])
+colorBounds = ([170, 100, 15], [185, 180, 170])
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -212,7 +212,7 @@ while key != ESC:
         cv.putText(frame, rgbString, (10, getMinY + 35), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
         cv.putText(frame, mouseString, (10, getMinY + 55), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
-    cv.imshow(name, np.hstack([frame, cv.cvtColor(threshed, cv.COLOR_GRAY2BGR)]))
+    cv.imshow(name, frame)
     # cv.imshow(name, frame)
 
     if key == ord('c'):
