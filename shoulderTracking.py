@@ -10,7 +10,7 @@ import lineDetection
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the Opencv library
 faceCascade = cv.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
-colorBounds = ([170, 100, 15], [185, 180, 190])
+colorBounds = ([170, 90, 15], [185, 190, 200])
 
 def highestWhite(img_gray, x, minY = 0):
     x = int(x)
@@ -59,18 +59,9 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.5, y_scale=0.75):
 
     # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
 
-    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions,plot=False)
+    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions,plot=False,low = 0.1)
 
     return line, slope, points
-
-def draw_line_onto_image(img, line, color="GREEN"):
-    beginning = line[0];
-    end = line[1];
-    if(color=="GREEN"): color = (0, 255, 0);
-    if(color=="BLUE"): color = (255, 0, 0);
-    if(color=="RED"): color = (0, 0, 255);
-    cv.line(img, beginning, end, color, 1)
-    return img;
 
 def plotPoints(img, pointList, color = (0,0,255)):
     for point in pointList:
@@ -135,6 +126,27 @@ while True:
 
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
-    cv.imshow(name, mask)
+    shoulderData = detectShoulders(gray, mask)
+    noShoulderData = False
+    if shoulderData is None:
+        noShoulderData = True
+    else:
+        right_line, right_slope, left_line, left_slope = shoulderData
+
+        right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
+        right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
+        frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
+
+        left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
+        left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
+        frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
+
+        frame = cv.circle(frame, left_beginning, 5, (255,0,0))
+
+        print(right_slope)
+        print(left_slope)
+
+    cv.imshow(name, frame)
+    cv.imshow("mask", mask)
 
 cv.destroyAllWindows()
