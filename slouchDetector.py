@@ -122,7 +122,6 @@ while key != ESC:
         noShoulderData = True
     else:
         right_line, right_slope, left_line, left_slope = shoulderData
-        print("slope diff")
         right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
         right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
         frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
