@@ -6,7 +6,7 @@ import datetime
 import pymsgbox
 import copy
 from eyeDetector import get_eyes
-from shoulderTracking import detectShoulders, plotPoints
+from shoulderTracking import detectShoulders
 import csv
 
 # need this line or else get weird abort when you run another popup
@@ -111,20 +111,20 @@ while key != ESC:
     mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
-    gray = cv.cvtColor(maskedImg, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     blurred = cv.GaussianBlur(gray, (7, 7), 0)
     threshed = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]
 
-    cv.imshow("mask", mask)
+    # cv.imshow("mask", mask)
 
     shoulderData = detectShoulders(gray, mask)
-    shoulderData = None
     noShoulderData = False
     if shoulderData is None:
+        print("No shoulder Data")
         noShoulderData = True
     else:
         right_line, right_slope, left_line, left_slope = shoulderData
-
+        print("slope diff")
         right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
         right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
         frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
@@ -133,8 +133,8 @@ while key != ESC:
         left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
         frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
 
-        print(right_slope)
-        print(left_slope)
+        print(right_slope - left_slope)
+        # print(left_slope)
 
     contours = cv.findContours(threshed.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)

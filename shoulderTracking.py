@@ -12,17 +12,17 @@ import lineDetection
 faceCascade = cv.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
 colorBounds = ([170, 90, 15], [185, 190, 200])
 
-def highestWhite(img_gray, x, minY = 0):
+def highestWhite(gray, x, minY = 0):
     x = int(x)
     minY = int(minY)
-    column = img_gray[minY:,x]
+    column = gray[minY:,x]
     for i in range(len(column)):
         val = column[i]
         if val > 0:
             return i+minY
     return None
 
-def detect_shoulder(img_gray, face, direction, x_scale=0.5, y_scale=0.75):
+def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
     # x_scale = 0.7
@@ -42,8 +42,8 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.5, y_scale=0.75):
     y_positions = np.array([])
     for delta_x in range(w):
         this_x = x + delta_x;
-        # this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
-        this_y = highestWhite(img_gray, this_x, minY = y_face + h_face/2)
+        # this_y = calculate_max_contrast_pixel(gray, this_x, y, h);
+        this_y = highestWhite(gray, this_x, minY = y_face + h_face/2)
         if(this_y is None): continue; # dont add if no clear best value
         x_positions = np.append(x_positions, int(this_x))
         y_positions = np.append(y_positions, int(this_y))
@@ -69,10 +69,9 @@ def plotPoints(img, pointList, color = (0,0,255)):
         y = int(point[1])
         img[y,x] = color
 
-def detectShoulders(img_gray, mask):
+def detectShoulders(gray, mask):
     #Now use the haar cascade detector to find all faces in the image
-    faces = faceCascade.detectMultiScale(img_gray, 1.3, 5)
-
+    faces = faceCascade.detectMultiScale(gray, 1.3, 5)
     maxArea = 0
     x = 0
     y = 0
@@ -97,7 +96,7 @@ def detectShoulders(img_gray, mask):
 
     if largestArea > 0:
         # print("new frame")
-        # cv.rectangle(img_gray,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
+        # cv.rectangle(gray,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
@@ -105,48 +104,52 @@ def detectShoulders(img_gray, mask):
         left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
 
         return right_line, right_slope, left_line, left_slope
+    else:
+        print("No face")
 
     return None
 
 
-stream = cv.VideoCapture(0)
-
-name = "frames"
-cv.namedWindow(name)
-
-while True:
-    grabbed, frame = stream.read()
-    key = cv.waitKey(1) & 0xFF
-
-    lower = np.array(colorBounds[0], dtype="uint8")
-    upper = np.array(colorBounds[1], dtype="uint8")
-
-    hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-    mask = cv.inRange(hsvFrame, lower, upper)
-
-    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-
-    shoulderData = detectShoulders(gray, mask)
-    noShoulderData = False
-    if shoulderData is None:
-        noShoulderData = True
-    else:
-        right_line, right_slope, left_line, left_slope = shoulderData
-
-        right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
-        right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
-        frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
-
-        left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
-        left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
-        frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
-
-        frame = cv.circle(frame, left_beginning, 5, (255,0,0))
-
-        print(right_slope)
-        print(left_slope)
-
-    cv.imshow(name, frame)
-    cv.imshow("mask", mask)
-
-cv.destroyAllWindows()
+# stream = cv.VideoCapture(0)
+#
+# name = "frames"
+# cv.namedWindow(name)
+#
+# while True:
+#     grabbed, frame = stream.read()
+#     key = cv.waitKey(1) & 0xFF
+#
+#     lower = np.array(colorBounds[0], dtype="uint8")
+#     upper = np.array(colorBounds[1], dtype="uint8")
+#
+#     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+#     mask = cv.inRange(hsvFrame, lower, upper)
+#
+#     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+#
+#     shoulderData = detectShoulders(gray, mask)
+#     noShoulderData = False
+#     if shoulderData is None:
+#         noShoulderData = True
+#     else:
+#         right_line, right_slope, left_line, left_slope = shoulderData
+#
+#         right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
+#         right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
+#         frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
+#
+#         left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
+#         left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
+#         frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
+#
+#         frame = cv.circle(frame, left_beginning, 5, (255,0,0))
+#
+#         print(right_slope)
+#         print(left_slope)
+#
+#     print("Hello")
+#
+#     cv.imshow(name, frame)
+#     cv.imshow("mask", mask)
+#
+# cv.destroyAllWindows()
