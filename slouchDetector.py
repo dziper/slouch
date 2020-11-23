@@ -112,9 +112,6 @@ while key != ESC:
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    blurred = cv.GaussianBlur(gray, (7, 7), 0)
-    threshed = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]
-
     # cv.imshow("mask", mask)
 
     shoulderData = detectShoulders(gray, mask)
@@ -135,69 +132,6 @@ while key != ESC:
 
         print(right_slope - left_slope)
         # print(left_slope)
-
-    contours = cv.findContours(threshed.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    contours = imutils.grab_contours(contours)
-
-    contAngles = []
-
-    for cont in contours:
-        M = cv.moments(cont)
-        if M["m00"] == 0:
-            continue
-
-        extLeft = tuple(cont[cont[:, :, 0].argmin()][0])
-        extRight = tuple(cont[cont[:, :, 0].argmax()][0])
-        extTop = tuple(cont[cont[:, :, 1].argmin()][0])
-        extBottom = tuple(cont[cont[:, :, 1].argmax()][0])
-
-        contWidth = extRight[0] - extLeft[0]
-        contHeight = extBottom[1] - extTop[1]
-        contArea = contWidth * contHeight
-
-        contArea = cv.contourArea(cont)
-
-        rect = cv.minAreaRect(cont)
-        box1 = cv.boxPoints(rect)
-        box = np.int0(box1)
-        boxArea = cv.contourArea(box)
-
-        if boxArea < MAX_COUNTOUR_SIZE:
-            continue
-
-        angle = rect[2]
-        contAngles.append(angle)
-
-        cX = int(M["m10"]/M["m00"])
-        cY = int(M["m01"]/M["m00"])
-        cv.circle(frame, (cX, cY), 3, (0, 0, 255), -1)
-        cv.drawContours(frame, [cont], -1, (255, 255, 255), 2)
-        cv.drawContours(frame, [box], -1, (0, 255, 255), 2)
-
-    if(len(contAngles) > 1):
-        # can see two contours
-        angleBetween = np.abs(contAngles[0] - contAngles[1])
-        distFromCenter = np.abs(angleBetween - centerAngle)
-
-        cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
-                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
-
-        if (distFromCenter > SLOUCH_THRESH):
-            # detected slouch
-            if startTime == None:
-                startTime = currTime
-            cv.circle(frame, (30, 30), 10, (0, 150 - distFromCenter, 150 + distFromCenter), -1)
-            cv.putText(frame, "Stop slouching!", (10, 25),
-                        cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-        else:
-            startTime = None
-            cv.circle(frame, (30, 30), 10, (0, 255, 0), -1)
-
-    else:
-        # can't find contours
-        startTime = None
-        cv.putText(frame, "Can't find contours!", (10, 25),
-                    cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
 
     cursorBGR = [-1, -1, -1]
     if mouseX != None and mouseX < len(frame[0]):
