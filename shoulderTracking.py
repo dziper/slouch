@@ -10,28 +10,7 @@ import lineDetection
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the OpenCV2 library
 faceCascade = cv2.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
-
-#The deisred output width and height
-OUTPUT_SIZE_WIDTH = 775
-OUTPUT_SIZE_HEIGHT = 600
 colorBounds = ([170, 100, 15], [180, 180, 100])
-
-#Open the first webcame device
-capture = cv2.VideoCapture(0)
-
-#Create two opencv named windows
-cv2.namedWindow("base-image", cv2.WINDOW_AUTOSIZE)
-cv2.namedWindow("result-image", cv2.WINDOW_AUTOSIZE)
-
-#Position the windows next to eachother
-cv2.moveWindow("base-image",0,100)
-cv2.moveWindow("result-image",400,100)
-
-#Start the window thread for the two windows we are using
-cv2.startWindowThread()
-
-rectangleColor = (0,165,255)
-
 
 def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, search_width = 20):
     columns = img_gray[int(y):int(y+h), int(x-search_width/2):int(x+search_width/2)];
@@ -118,34 +97,10 @@ def plotPoints(img, pointList, color = (0,0,255)):
         y = int(point[1])
         img[y,x] = color
 
-while True:
-    #Retrieve the latest image from the webcam
-    rc,fullSizeBaseImage = capture.read()
 
-    #Resize the image to 320x240
-    baseImage = cv2.resize(fullSizeBaseImage, ( 320, 240))
-
-
-    #Check if a key was pressed and if it was Q, then destroy all
-    #opencv windows and exit the application
-    pressedKey = cv2.waitKey(2)
-    if pressedKey == ord('Q'):
-        cv2.destroyAllWindows()
-        exit(0)
-
-    #Result image is the image we will show the user, which is a
-    #combination of the original image from the webcam and the
-    #overlayed rectangle for the largest face
-    resultImage = baseImage.copy()
-
-
-    #For the face detection, we need to make use of a gray colored
-    #image so we will convert the baseImage to a gray-based image
-    gray = cv2.cvtColor(baseImage, cv2.COLOR_BGR2GRAY)
-    #Now use the haar cascade detector to find all faces in the
-    #image
-    faces = faceCascade.detectMultiScale(gray, 1.3, 5)
-
+def detectShoulders(img_gray, mask):
+    #Now use the haar cascade detector to find all faces in the image
+    faces = faceCascade.detectMultiScale(img_gray, 1.3, 5)
 
     #For now, we are only interested in the 'largest' face, and we
     #determine this based on the largest area of the found
@@ -180,52 +135,16 @@ while True:
     if largestArea > 0:
         # print("new frame")
 
-        cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
+        # cv2.rectangle(img_gray,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
 
 
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
-        hsvFrame = cv2.cvtColor(baseImage, cv2.COLOR_BGR2HSV)
-
-        mask = cv2.inRange(hsvFrame, lower, upper)
-        cv2.imshow("mask", mask)
-
         right_line, right_slope, right_points = detect_shoulder(mask, bigFace, "right")
         left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
 
-        # print(right_slope)
-        # print(right_line[:20])
+        return right_line, right_slope, left_line, left_slope
 
-        plotPoints(resultImage, right_line,color=(0,255,0))
-        plotPoints(resultImage, left_line, color=(0,255,0))
-
-        print(right_points.shape)
-        plotPoints(resultImage, right_points)
-        plotPoints(resultImage, left_points)
-
-        # print("line: ")
-        # print(line)
-        # print("lines: ")
-        # print(lines)
-        # print("rectangle: ")
-        # print(rectangle)
-        # print("value: ")
-        # print(value)
-
-
-
-
-    #Since we want to show something larger on the screen than the
-    #original 320x240, we resize the image again
-    #
-    #Note that it would also be possible to keep the large version
-    #of the baseimage and make the result image a copy of this large
-    #base image and use the scaling factor to draw the rectangle
-    #at the right coordinates.
-    largeResult = cv2.resize(resultImage,(OUTPUT_SIZE_WIDTH,OUTPUT_SIZE_HEIGHT))
-
-    #Finally, we want to show the images on the screen
-    cv2.imshow("base-image", baseImage)
-    cv2.imshow("result-image", largeResult)
+    return None
