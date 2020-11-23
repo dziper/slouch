@@ -8,6 +8,12 @@ def tryLine(x,y,low,high, plot = False, getLine = False):
     totalLength = len(x)
     x_slice = x[int(totalLength*low):int(totalLength*high)]
     y_slice = y[int(totalLength*low):int(totalLength*high)]
+
+    if x_slice == None or y_slice == None:
+        if getLine:
+            print("this is a problem tell Daniel")
+        return 0
+
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_slice,y_slice)
     corrCoeff = r_value ** 2
     y_points = intercept + slope * x_slice
