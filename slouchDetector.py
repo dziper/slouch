@@ -8,6 +8,7 @@ import copy
 from eyeDetector import get_eyes
 from shoulderTracking import detectShoulders
 import csv
+import math
 
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
@@ -130,8 +131,36 @@ while key != ESC:
         left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
         frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
 
-        print(right_slope - left_slope)
+
+        slopeDiff = right_slope - left_slope
+
+        angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
         # print(left_slope)
+
+    if(not noShoulderData):
+        # can see two contours
+
+        distFromCenter = np.abs(angleBetween - centerAngle)
+
+        cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
+                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+
+        if (distFromCenter > SLOUCH_THRESH):
+            # detected slouch
+            if startTime == None:
+                startTime = currTime
+            cv.circle(frame, (30, 30), 10, (0, 150 - distFromCenter, 150 + distFromCenter), -1)
+            cv.putText(frame, "Stop slouching!", (10, 25),
+                        cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+        else:
+            startTime = None
+            cv.circle(frame, (30, 30), 10, (0, 255, 0), -1)
+
+    else:
+        # can't find contours
+        startTime = None
+        cv.putText(frame, "Can't find face/shoulders", (10, 25),
+                    cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
 
     cursorBGR = [-1, -1, -1]
     if mouseX != None and mouseX < len(frame[0]):
