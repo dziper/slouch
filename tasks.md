@@ -8,19 +8,18 @@
 - [ ] User alerts when slouching
 
 ## Image Processing
-- [ ] Eye Detection
-  - [ ] Get eye position each frame in slouchdetector.py
-    - THIS WEEK (by 11/23)
+- [x] Eye Detection
+  - [x] Get eye position each frame in slouchdetector.py
     - @Karli
 - [ ] Shoulder Detection
-  - [ ] Mask frame for only shirt color based on selection
-  - [ ] Tune height and width of shoulder detection
+  - [x] Mask frame for only shirt color based on selection
+  - [x] Tune height and width of shoulder detection
   - [ ] Get shoulder data each frame in slouchdetector.py
   - THIS WEEK (by 11/23)
   - @Daniel
 
 ## Data Collection
-- [ ] Write data to CSV
+- [x] Write data to CSV
   - THIS WEEK (by 11/23)
   - @Karli
 - [ ] Open source data collection?
