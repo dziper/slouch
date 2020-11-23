@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from scipy import stats;
 import math
+import lineDetection
 
 #Initialize a face cascade using the frontal face haar cascade provided
 #with the OpenCV2 library
@@ -13,6 +14,7 @@ faceCascade = cv2.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
 #The deisred output width and height
 OUTPUT_SIZE_WIDTH = 775
 OUTPUT_SIZE_HEIGHT = 600
+colorBounds = ([100, 60, 70], [120, 120, 200])
 
 #Open the first webcame device
 capture = cv2.VideoCapture(0)
@@ -32,19 +34,6 @@ rectangleColor = (0,165,255)
 
 
 def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, search_width = 20):
-    # print("img_gray: ")
-    # print(img_gray)
-    # print("x: ")
-    # print(x)
-    # print("y: ")
-    # print(y)
-    # print("h: ")
-    # print(h)
-
-    # print(y+h)
-    # print(x-search_width/2)
-    # print(x+search_width/2)
-
     columns = img_gray[int(y):int(y+h), int(x-search_width/2):int(x+search_width/2)];
 
     column_average = columns.mean(axis=1);
@@ -63,48 +52,53 @@ def calculate_max_contrast_pixel(img_gray, x, y, h, top_values_to_consider=3, se
     index = y + index;
     return index;
 
+def highestWhite(img_gray, x, minY = 0):
+    x = int(x)
+    minY = int(minY)
+    column = img_gray[minY:,x]
+    for i in range(len(column)):
+        val = column[i]
+        if val > 0:
+            return i+minY
+    return None
+
 def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
+
+    x_scale = 0.7
 
     HEIGHT_MULTIPLIER = 1
 
     # define shoulder box componenets
     w = int(x_scale * w_face);
     h = int(y_scale * h_face);
-    y = y_face + h_face * HEIGHT_MULTIPLIER; # half way down head position
-    if(direction == "right"): x = x_face + w_face - w / 20; # right end of the face box
-    if(direction == "left"): x = x_face - w + w/20; # w to the left of the start of face box
+    y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
+    if(direction == "right"): x = x_face + 4*w_face/5; # right end of the face box
+    if(direction == "left"): x = x_face - 4*w/5; # w to the left of the start of face box
     rectangle = (x, y, w, h);
 
     # calculate position of shoulder in each x strip
-    x_positions = [];
-    y_positions = [];
+    x_positions = np.array([])
+    y_positions = np.array([])
     for delta_x in range(w):
         this_x = x + delta_x;
-        this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
+        # this_y = calculate_max_contrast_pixel(img_gray, this_x, y, h);
+        this_y = highestWhite(img_gray, this_x, minY = y_face + h_face/2)
         if(this_y is None): continue; # dont add if no clear best value
-        x_positions.append(int(this_x));
-        y_positions.append(int(this_y));
+        x_positions = np.append(x_positions, int(this_x))
+        y_positions = np.append(y_positions, int(this_y))
 
     # extract line from positions
     #line = [(x_positions[5], y_positions[5]), (x_positions[-10], y_positions[-10])];
-    lines = [];
-    for index in range(len(x_positions)):
-        lines.append((x_positions[index], y_positions[index]));
+    points = np.array([x_positions,y_positions])
 
     # extract line of best fit from lines
 
-    slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
-    line_y0 = int(x_positions[0] * slope + intercept)
-    line_y1 = int(x_positions[-1] * slope + intercept);
-    line = [(int(x_positions[0]), int(line_y0)), (int(x_positions[-1]), int(line_y1))];
+    # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
 
-    # decide on value
-    #value = intercept;
-    value = np.array([line[0][1], line[1][1]]).mean();
+    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions)
 
-    # return rectangle and positions
-    return line, lines, rectangle, value;
+    return line, slope, points
 
 def draw_line_onto_image(img, line, color="GREEN"):
     beginning = line[0];
@@ -112,8 +106,14 @@ def draw_line_onto_image(img, line, color="GREEN"):
     if(color=="GREEN"): color = (0, 255, 0);
     if(color=="BLUE"): color = (255, 0, 0);
     if(color=="RED"): color = (0, 0, 255);
-    cv2.line(img, beginning, end, color, 2)
+    cv2.line(img, beginning, end, color, 1)
     return img;
+
+def plotPoints(img, pointList, color = (0,0,255)):
+    for point in pointList:
+        x = int(point[0])
+        y = int(point[1])
+        img[y,x] = color
 
 while True:
     #Retrieve the latest image from the webcam
@@ -175,13 +175,31 @@ while True:
 
 
     if largestArea > 0:
+        print("new frame")
+
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
-        (right_line, right_lines, right_rectangle, right_value) = detect_shoulder(gray, bigFace, "right")
-        (left_line, left_lines, left_rectangle, left_value) = detect_shoulder(gray, bigFace, "left")
-        draw_line_onto_image(resultImage, right_line)
-        draw_line_onto_image(resultImage, left_line)
 
+
+        lower = np.array(colorBounds[0], dtype="uint8")
+        upper = np.array(colorBounds[1], dtype="uint8")
+
+        hsvFrame = cv2.cvtColor(baseImage, cv2.COLOR_BGR2HSV)
+
+        mask = cv2.inRange(hsvFrame, lower, upper)
+        cv2.imshow("mask", mask)
+
+        right_line, right_slope, right_points = detect_shoulder(mask, bigFace, "right")
+        left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
+
+        print(right_slope)
+        print(right_line[:20])
+
+        plotPoints(resultImage, right_line,color=(0,255,0))
+        plotPoints(resultImage, left_line, color=(0,255,0))
+
+        plotPoints(resultImage, right_points)
+        plotPoints(resultImage, left_points)
 
         # print("line: ")
         # print(line)
