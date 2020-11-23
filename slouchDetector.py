@@ -6,6 +6,7 @@ import datetime
 import pymsgbox
 import copy
 from eyeDetector import get_eyes
+import csv
 
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
@@ -69,6 +70,11 @@ def click_n_crop(event, x, y, flags, param):
 		cv.imshow("image", image)
 
 
+def add_line_to_csv(filename, datalist):
+    with open(filename, mode='a') as currFile:
+        writer = csv.writer(currFile, delimiter=',', quotechar='"')
+        writer.writerow(datalist)
+
 cv.setMouseCallback(name, getMousePos)
 
 (grabbed, frame) = stream.read()
@@ -96,6 +102,8 @@ while key != ESC:
 
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
+
+    eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
