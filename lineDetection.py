@@ -32,7 +32,7 @@ def findBestFit(x,y,low=0.35,high=0.65,plot = False):
     max_iters = 10
     change = -0.2
 
-    sizeWeight = 0.3
+    sizeWeight = 0.2
 
     for i in range(max_iters):
         corr = tryLine(x,y,low,high)
