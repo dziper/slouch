@@ -1,11 +1,13 @@
 # Tasks
 ## UI
-- [ ] Implement select region and get average HSV of selection (activated with some UI button or key)
+- [ ] Implement region selecting in order to get a good color range for shirt masking (activated with some UI button or key)
   - THIS WEEK (by 11/23)
   - @Aakash
 - [ ] Get slouch statistics each frame and store history. Generate a graph of some kind   
   - @Aakash
 - [ ] User alerts when slouching
+- [ ] Actually design a UI with all the things it needs to be useable
+  - Someone who can do this
 
 ## Image Processing
 - [x] Eye Detection
@@ -14,6 +16,7 @@
 - [ ] Shoulder Detection
   - [x] Mask frame for only shirt color based on selection
   - [x] Tune height and width of shoulder detection
+  - [ ] Input checking everywhere
   - [ ] Get shoulder data each frame in slouchdetector.py
   - THIS WEEK (by 11/23)
   - @Daniel
