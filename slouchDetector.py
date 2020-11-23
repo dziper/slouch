@@ -6,6 +6,7 @@ import datetime
 import pymsgbox
 import copy
 from eyeDetector import get_eyes
+from shoulderTracking import detectShoulders, plotPoints
 import csv
 
 # need this line or else get weird abort when you run another popup
@@ -23,7 +24,7 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([0, 100, 200], [10, 255, 255])
+colorBounds = ([170, 100, 15], [180, 180, 100])
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -114,10 +115,26 @@ while key != ESC:
     blurred = cv.GaussianBlur(gray, (7, 7), 0)
     threshed = cv.threshold(blurred, 60, 255, cv.THRESH_BINARY)[1]
 
+    cv.imshow("mask", mask)
+
+    shoulderData = detectShoulders(gray, mask)
+    noShoulderData = False
+    if shoulderData is None:
+        noShoulderData = True
+    else:
+        right_line, right_slope, left_line, left_slope = shoulderData
+        plotPoints(frame, right_line)
+        plotPoints(frame, left_line)
+        print(right_slope)
+        print(left_slope)
+
     contours = cv.findContours(threshed.copy(), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     contours = imutils.grab_contours(contours)
 
     contAngles = []
+
+
+    countours = None
 
     for cont in contours:
         M = cv.moments(cont)
