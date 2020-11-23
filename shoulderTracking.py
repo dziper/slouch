@@ -14,7 +14,7 @@ faceCascade = cv2.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
 #The deisred output width and height
 OUTPUT_SIZE_WIDTH = 775
 OUTPUT_SIZE_HEIGHT = 600
-colorBounds = ([100, 60, 70], [120, 120, 200])
+colorBounds = ([170, 100, 15], [180, 180, 100])
 
 #Open the first webcame device
 capture = cv2.VideoCapture(0)
@@ -62,10 +62,10 @@ def highestWhite(img_gray, x, minY = 0):
             return i+minY
     return None
 
-def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
+def detect_shoulder(img_gray, face, direction, x_scale=0.5, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
-    x_scale = 0.7
+    # x_scale = 0.7
 
     HEIGHT_MULTIPLIER = 1
 
@@ -73,8 +73,8 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
     w = int(x_scale * w_face);
     h = int(y_scale * h_face);
     y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
-    if(direction == "right"): x = x_face + 4*w_face/5; # right end of the face box
-    if(direction == "left"): x = x_face - 4*w/5; # w to the left of the start of face box
+    if(direction == "right"): x = x_face + w_face; # right end of the face box
+    if(direction == "left"): x = x_face - w; # w to the left of the start of face box
     rectangle = (x, y, w, h);
 
     # calculate position of shoulder in each x strip
@@ -90,13 +90,16 @@ def detect_shoulder(img_gray, face, direction, x_scale=0.75, y_scale=0.75):
 
     # extract line from positions
     #line = [(x_positions[5], y_positions[5]), (x_positions[-10], y_positions[-10])];
-    points = np.array([x_positions,y_positions])
+    if direction == "left":
+        x_positions = np.flip(x_positions)
+        y_positions = np.flip(y_positions)
+    points = np.stack([x_positions,y_positions],axis = -1)
 
     # extract line of best fit from lines
 
     # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
 
-    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions)
+    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions,plot=False)
 
     return line, slope, points
 
@@ -175,7 +178,7 @@ while True:
 
 
     if largestArea > 0:
-        print("new frame")
+        # print("new frame")
 
         cv2.rectangle(resultImage,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
 
@@ -192,12 +195,13 @@ while True:
         right_line, right_slope, right_points = detect_shoulder(mask, bigFace, "right")
         left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
 
-        print(right_slope)
-        print(right_line[:20])
+        # print(right_slope)
+        # print(right_line[:20])
 
         plotPoints(resultImage, right_line,color=(0,255,0))
         plotPoints(resultImage, left_line, color=(0,255,0))
 
+        print(right_points.shape)
         plotPoints(resultImage, right_points)
         plotPoints(resultImage, left_points)
 
