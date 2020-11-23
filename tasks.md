@@ -13,11 +13,11 @@
 - [x] Eye Detection
   - [x] Get eye position each frame in slouchdetector.py
     - @Karli
-- [ ] Shoulder Detection
+- [x] Shoulder Detection
   - [x] Mask frame for only shirt color based on selection
   - [x] Tune height and width of shoulder detection
   - [ ] Input checking everywhere
-  - [ ] Get shoulder data each frame in slouchdetector.py
+  - [x] Get shoulder data each frame in slouchdetector.py
   - THIS WEEK (by 11/23)
   - @Daniel
 
