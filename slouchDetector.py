@@ -107,7 +107,7 @@ while key != ESC:
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
-    eyeLoc1, eyeLoc2 = get_eyes(frame)
+    # eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -115,7 +115,7 @@ while key != ESC:
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    cv.imshow("mask", mask)
+    # cv.imshow("mask", mask)
 
     shoulderData = detectShoulders(gray, mask)
     noShoulderData = False
@@ -244,6 +244,8 @@ while key != ESC:
                     minCroppedHSV = croppedHSV[i,j]
                 if croppedHSV[i-1,j-1] < croppedHSV[i,j]:
                     maxCroppedHSV = croppedHSV[i,j]
+        avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
+        colorBounds = (minCroppedHSV, maxCroppedHSV)
         print(minCroppedHSV)
         print(maxCroppedHSV)
 
