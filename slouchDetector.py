@@ -26,6 +26,8 @@ getMinY = None
 
 # HSV color bounds
 colorBounds = ([170, 90, 15], [185, 190, 200])
+croppedImage = None
+croppedHSV = None
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -105,7 +107,7 @@ while key != ESC:
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
-    # eyeLoc1, eyeLoc2 = get_eyes(frame)
+    eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -113,7 +115,7 @@ while key != ESC:
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    # cv.imshow("mask", mask)
+    cv.imshow("mask", mask)
 
     shoulderData = detectShoulders(gray, mask)
     noShoulderData = False
@@ -231,6 +233,19 @@ while key != ESC:
         	roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
         	cv.imshow("ROI", roi)
         	cv.waitKey(0)
+        cv.imwrite('roi.jpg', roi)
+        croppedImage = cv.imread('roi.jpg')
+        croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
+        minCroppedHSV = croppedHSV[0,0]
+        maxCroppedHSV = croppedHSV[0,0]
+        for i in range(1, croppedHSV[0]):
+            for j in range(1, croppedHSV[1]):
+                if croppedHSV[i-1,j-1] > croppedHSV[i,j]:
+                    minCroppedHSV = croppedHSV[i,j]
+                if croppedHSV[i-1,j-1] < croppedHSV[i,j]:
+                    maxCroppedHSV = croppedHSV[i,j]
+        print(minCroppedHSV)
+        print(maxCroppedHSV)
 
     if startTime != None:
         if (currTime-startTime).total_seconds() > SLOUCH_TIMER:
