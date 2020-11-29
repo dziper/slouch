@@ -59,7 +59,11 @@ def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
 
     # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
 
-    corrCoeff, line, slope, intercept = lineDetection.findBestFit(x_positions,y_positions,plot=False,low = 0.1)
+    shoulderData = lineDetection.findBestFit(x_positions,y_positions,plot=False,low = 0.1)
+    if shoulderData is None:
+        return None
+
+    corrCoeff, line, slope, intercept = shoulderData
 
     return line, slope, points
 
@@ -100,8 +104,14 @@ def detectShoulders(gray, mask):
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
-        right_line, right_slope, right_points = detect_shoulder(mask, bigFace, "right")
-        left_line, left_slope, left_points = detect_shoulder(mask, bigFace, "left")
+        rightShoulderData = detect_shoulder(mask, bigFace, "right")
+        leftShoulderData = detect_shoulder(mask, bigFace, "left")
+
+        if rightShoulderData is None or leftShoulderData is None:
+            return None
+
+        right_line, right_slope, right_points = rightShoulderData
+        left_line, left_slope, left_points = leftShoulderData
 
         return right_line, right_slope, left_line, left_slope
     else:

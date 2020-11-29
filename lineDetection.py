@@ -9,10 +9,8 @@ def tryLine(x,y,low,high, plot = False, getLine = False):
     x_slice = x[int(totalLength*low):int(totalLength*high)]
     y_slice = y[int(totalLength*low):int(totalLength*high)]
 
-    if x_slice == None or y_slice == None:
-        if getLine:
-            print("this is a problem tell Daniel")
-        return 0
+    if x_slice is None or y_slice is None or x_slice.size == 0 or y_slice.size == 0:
+        return None
 
     slope, intercept, r_value, p_value, std_err = stats.linregress(x_slice,y_slice)
     corrCoeff = r_value ** 2
@@ -33,6 +31,8 @@ def tryLine(x,y,low,high, plot = False, getLine = False):
 def findBestFit(x,y,low=0.35,high=0.65,plot = False):
     corrStepThresh = -0.01
     corr = tryLine(x,y,low,high)
+    if corr == None:
+        return None
     prevScore = 0
     iters = 0
     max_iters = 10

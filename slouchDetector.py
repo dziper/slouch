@@ -25,7 +25,7 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([170, 90, 15], [185, 190, 200])
+colorBounds = ([5, 130, 150], [10, 190, 255])
 croppedImage = None
 croppedHSV = None
 
@@ -115,7 +115,7 @@ while key != ESC:
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    # cv.imshow("mask", mask)
+    cv.imshow("mask", mask)
 
     shoulderData = detectShoulders(gray, mask)
     noShoulderData = False
@@ -124,23 +124,24 @@ while key != ESC:
         noShoulderData = True
     else:
         right_line, right_slope, left_line, left_slope = shoulderData
-        right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
-        right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
-        frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
 
-        left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
-        left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
-        frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
+        if not (np.isnan((right_slope,left_slope)).any() or np.isnan(right_line).any() or np.isnan(left_line).any()):
+            right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
+            right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
+            frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
 
+            left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
+            left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
+            frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
 
-        slopeDiff = right_slope - left_slope
+            slopeDiff = right_slope - left_slope
 
-        angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
-        # print(left_slope)
+            angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
+        else:
+            noShoulderData = True
+
 
     if(not noShoulderData):
-        # can see two contours
-
         distFromCenter = np.abs(angleBetween - centerAngle)
 
         cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
