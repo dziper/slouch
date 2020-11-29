@@ -231,6 +231,7 @@ while key != ESC:
         # if there are two reference points, then crop the region of interest
         # from the image and display it
         if len(refPt) == 2:
+            # @Aakash You get an error here if you draw the rectangle in the wrong way (ex right to left instead of l to r)
         	roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
         	cv.imshow("ROI", roi)
         	cv.waitKey(0)
@@ -239,9 +240,10 @@ while key != ESC:
         croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
         minCroppedHSV = croppedHSV[0,0]
         maxCroppedHSV = croppedHSV[0,0]
-        for i in range(1, croppedHSV[0]):
+        for i in range(1, croppedHSV[0]): #this is looping from range 1 to (h,s,v). did you even test this before you pushed lol
             for j in range(1, croppedHSV[1]):
                 if croppedHSV[i-1,j-1] > croppedHSV[i,j]:
+                    #you cant compare tuples this way. need to find mins and maxes of each h, s, v separately
                     minCroppedHSV = croppedHSV[i,j]
                 if croppedHSV[i-1,j-1] < croppedHSV[i,j]:
                     maxCroppedHSV = croppedHSV[i,j]
