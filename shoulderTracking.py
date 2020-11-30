@@ -115,7 +115,8 @@ def detectShoulders(gray, mask):
 
         return right_line, right_slope, left_line, left_slope
     else:
-        print("No face")
+        pass
+        # print("No face")
 
     return None
 
