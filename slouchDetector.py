@@ -82,7 +82,7 @@ def add_line_to_csv(filename, datalist):
 cv.setMouseCallback(name, getMousePos)
 
 (grabbed, frame) = stream.read()
-cleanFrame = copy.deepcopy(frame)
+cleanFrame = frame.copy()
 
 print("frame shape: " + str(frame.shape))
 
@@ -99,10 +99,10 @@ while key != ESC:
 
     if not togglePause:
         (grabbed, frame) = stream.read()
-        cleanFrame = copy.deepcopy(frame)
+        cleanFrame = frame.copy()
 
     if togglePause:
-        frame = copy.deepcopy(cleanFrame)
+        frame = cleanFrame.copy()
 
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
@@ -120,7 +120,7 @@ while key != ESC:
     shoulderData = detectShoulders(gray, mask)
     noShoulderData = False
     if shoulderData is None:
-        print("No shoulder Data")
+        # print("No shoulder Data")
         noShoulderData = True
     else:
         right_line, right_slope, left_line, left_slope = shoulderData
@@ -210,51 +210,63 @@ while key != ESC:
         print("Saving Overlay Frame in " + overlayFile)
 
     if key == ord('x'):
-        togglePause = not togglePause
-        cv.imwrite('image.jpg', frame)
-        image = cv.imread('image.jpg')
-        clone = image.copy()
+        image = cleanFrame.copy()
         cv.namedWindow("image")
         cv.setMouseCallback("image", click_n_crop)
 
         # keep looping until the 'q' key is pressed
         while True:
-        	# display the image and wait for a keypress
-        	cv.imshow("image", image)
-        	key = cv.waitKey(1) & 0xFF
-        	# if the 'r' key is pressed, reset the cropping region
-        	if key == ord("r"):
-        		image = clone.copy()
-        	# if the 'c' key is pressed, break from the loop
-        	elif key == ord("c"):
-        		break
+            # display the image and wait for a keypress
+            cv.imshow("image", image)
+            key = cv.waitKey(1) & 0xFF
+            # if the 'r' key is pressed, reset the cropping region
+            if key == ord("r"):
+                image = cleanFrame.copy()
+            # if the 'c' key is pressed, break from the loop
+            elif key == ord("c"):
+                break
         # if there are two reference points, then crop the region of interest
         # from the image and display it
         if len(refPt) == 2:
-            # @Aakash You get an error here if you draw the rectangle in the wrong way (ex right to left instead of l to r)
-        	roi = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
-        	cv.imshow("ROI", roi)
-        	cv.waitKey(0)
-        cv.imwrite('roi.jpg', roi)
-        croppedImage = cv.imread('roi.jpg')
-        croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
-        minCroppedHSV = croppedHSV[0,0]
-        maxCroppedHSV = croppedHSV[0,0]
-        for i in range(1, croppedHSV[0]): #this is looping from range 1 to (h,s,v). did you even test this before you pushed lol
-            for j in range(1, croppedHSV[1]):
-                if croppedHSV[i-1,j-1] > croppedHSV[i,j]:
-                    #you cant compare tuples this way. need to find mins and maxes of each h, s, v separately
-                    minCroppedHSV = croppedHSV[i,j]
-                if croppedHSV[i-1,j-1] < croppedHSV[i,j]:
-                    maxCroppedHSV = croppedHSV[i,j]
-        avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
-        colorBounds = (minCroppedHSV, maxCroppedHSV)
-        print(minCroppedHSV)
-        print(maxCroppedHSV)
+            croppedImage = cleanFrame[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
+            # cv.imshow("ROI", roi)
+            # cv.waitKey(0)
+
+            print(refPt)
+
+            croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
+            minCroppedHSV = list(croppedHSV[0,0])
+            maxCroppedHSV = list(croppedHSV[0,0])
+
+            hues = np.array([])
+
+            totalHSV = 0
+            for i in range(0, croppedHSV.shape[0]):
+                for j in range(0, croppedHSV.shape[1]):
+                    for k in range(3):
+                        val = croppedHSV[i,j][k] #loop through h,s,v
+                        if k == 0:
+                            hues = np.append(hues, val)
+                        if val < minCroppedHSV[k]:
+                            minCroppedHSV[k] = val
+                        if val > maxCroppedHSV[k]:
+                            maxCroppedHSV[k] = val
+
+
+            # avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
+
+            # print(croppedHSV.size)
+            medHue = np.median(hues)
+            minCroppedHSV[0] = medHue - 5
+            maxCroppedHSV[0] = medHue + 5
+            colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
+            print(minCroppedHSV)
+            print(maxCroppedHSV)
 
     if startTime != None:
         if (currTime-startTime).total_seconds() > SLOUCH_TIMER:
             # pymsgbox.alert("Stop slouching!", "Hey!")
+            # print("Slouch Timer!")
             pass
 
     key = cv.waitKey(1) & 0xFF
