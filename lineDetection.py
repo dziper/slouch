@@ -42,6 +42,8 @@ def findBestFit(x,y,low=0.35,high=0.65,plot = False):
 
     for i in range(max_iters):
         corr = tryLine(x,y,low,high)
+        if corr == None:
+            corr = 0
         score = (1-sizeWeight + sizeWeight*(high - low)) * corr
         # print("score {}".format(score))
 
@@ -66,6 +68,8 @@ def findBestFit(x,y,low=0.35,high=0.65,plot = False):
     for i in range(max_iters):
         # print(high)
         corr = tryLine(x,y,low,high)
+        if corr == None:
+            corr = 0
         score = (1-sizeWeight + sizeWeight*(high - low)) * corr
         # print("score {}".format(score))
 
