@@ -20,6 +20,7 @@ MAX_COUNTOUR_SIZE = 800
 ESC = 27
 
 centerAngle = 54
+angleBetween = 0
 togglePause = False
 
 getMinY = None
@@ -107,8 +108,6 @@ while key != ESC:
     lower = np.array(colorBounds[0], dtype="uint8")
     upper = np.array(colorBounds[1], dtype="uint8")
 
-    # eyeLoc1, eyeLoc2 = get_eyes(frame)
-
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
     mask = cv.inRange(hsvFrame, lower, upper)
@@ -116,6 +115,16 @@ while key != ESC:
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     cv.imshow("mask", mask)
+
+    frameData = []
+
+    eyeLoc1, eyeLoc2 = get_eyes(frame)
+    noEyeData = False
+    if eyeLoc1 == (0,0) and eyeLoc2 == (0,0):
+        noEyeData = True
+    else:
+        frameData.append(eyeLoc1)
+        frameData.append(eyeLoc2)
 
     shoulderData = detectShoulders(gray, mask)
     noShoulderData = False
@@ -134,9 +143,11 @@ while key != ESC:
             left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
             frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
 
-            slopeDiff = right_slope - left_slope
+            # slopeDiff = right_slope - left_slope
+            # angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
 
-            angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
+            frameData += (right_beginning, right_end, right_slope)
+            frameData += (left_beginning, left_end, left_slope)
         else:
             noShoulderData = True
 
