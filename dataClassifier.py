@@ -1,17 +1,6 @@
 import math
 
 class DataClassifier:
-    right_eye = None
-    left_eye = None
-
-    right_beginning = None
-    right_end = None
-    right_slope = None
-
-    left_beginning = None
-    left_end = None
-    left_slope = None
-
     def __init__(self,frameData, calibratedData):
         if len(frameData) != 8 or len(calibratedData) != 8:
             return False
@@ -23,6 +12,22 @@ class DataClassifier:
         self.left_beginning = (frameData[5], calibratedData[5])
         self.left_end = (frameData[6], calibratedData[6])
         self.left_slope = (frameData[7], calibratedData[7])
+
+        return True
+
+    #update data
+    def newData(self, data, classify = False):
+        if len(frameData) != 8 or len(calibratedData) != 8:
+            return False
+
+        self.right_eye[classify] = frameData[0]
+        self.left_eye[classify] = frameData[1]
+        self.right_beginning[classify] = frameData[2]
+        self.right_end[classify] = frameData[3]
+        self.right_slope[classify] = frameData[4]
+        self.left_beginning[classify] = frameData[5]
+        self.left_end[classify] = frameData[6]
+        self.left_slope[classify] = frameData[7]
 
         return True
 
@@ -40,4 +45,4 @@ class DataClassifier:
         return calibAngleBetween - angleBetween
 
     # returns
-    def getEyeShoulderRatio(index):
+    def getEyeShoulderRatio(self, index):
