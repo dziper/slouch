@@ -34,6 +34,15 @@ class DataClassifier:
     def classify(self):
         weightedSum = 0
 
+        angleWeight = 1
+        weightedSum += self.getAngleDifference() * angleWeight
+
+        ratioDifference = self.getEyeShoulderRatio(classify = True) - self.getEyeShoulderRatio()
+        ratioWeight = 1
+        weightedSum += ratioDifference + ratioWeight
+
+        return weightedSum 
+
     #returns angle difference between calib and frame angle in degrees
     def getAngleDifference(self):
         calibSlopeDiff = self.right_slope[1] - self.left_slope[1]
