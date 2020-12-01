@@ -44,5 +44,11 @@ class DataClassifier:
 
         return calibAngleBetween - angleBetween
 
-    # returns
-    def getEyeShoulderRatio(self, index):
+    # returns ratio beterrn eyes and shoulders
+    def getEyeShoulderRatio(self, classify=False):
+        eyeWidth = self.right_eye[classify][0] - self.left_eye[classify][0]
+
+        # TODO: Check if left/right beginninin or end shoulder points are the end points
+
+        shoulderWidth = self.right_beginning[classify][0] - self.left_beginning[classify][0]
+        return eyeWidth/shoulderWidth
