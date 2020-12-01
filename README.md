@@ -4,13 +4,12 @@ Our project uses the webcam on the user’s computer to monitor their posture an
 
 ### Installation:
 Please make sure you have the following packages installed before use:
-import cv2 as cv
-import argparse
-import imutils
-import numpy as np
-import pymsgbox
-from scipy import stats;
-import matplotlib.pyplot as plt
+- opencv-python
+- imutils
+- numpy
+- pymsgbox
+- scipy
+- matplotlib
 
 You can use pip3 or conda to install these packages
 
