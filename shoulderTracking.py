@@ -16,7 +16,7 @@ def highestWhite(gray, x, minY = 0):
     x = int(x)
     minY = int(minY)
     column = gray[minY:,x]
-    for i in range(len(column)):
+    for i in range(len(column)-1):
         val = column[i]
         if val > 0:
             return i+minY

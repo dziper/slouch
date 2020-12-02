@@ -112,7 +112,6 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([5, 130, 150], [10, 190, 255])
 croppedImage = None
 croppedHSV = None
 
