@@ -38,8 +38,8 @@ class DataClassifier:
 
         ratioDifference = self.getEyeShoulderRatio(classify = True)/self.getEyeShoulderRatio()
         invRatioDifference = 1/ratioDifference
-        ratioDifference = max(ratioDifference,invRatioDifference) - 1
-        ratioWeight = 0.1
+        ratioDifference = max(ratioDifference,invRatioDifference) + 1
+        ratioWeight = 0.5
         ratioVal = np.abs(ratioDifference) * ratioWeight
 
         print("angle")
@@ -52,7 +52,7 @@ class DataClassifier:
         print("sum")
         print(weightedSum)
 
-        return DataClassifier.sigmoid(weightedSum)
+        return (DataClassifier.sigmoid(weightedSum) - 0.5)*2
 
     #returns angle difference between calib and frame angle in degrees
     def getAngleDifference(self):
