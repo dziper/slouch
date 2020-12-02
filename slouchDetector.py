@@ -161,26 +161,12 @@ while key != ESC:
         cv.putText(frame, "Confidence: " + str(np.round(slouchConfidence, decimals = 3)), (10, 100),
                     cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
-        print(slouchConfidence)
+        circleColor = (0,255,0)
+        if slouchConfidence > 0.5:
+            circleColor = (0,0,255)
+        cv.circle(frame, (30, 30), 10, circleColor, -1)
 
-    if(not noShoulderData):
-        distFromCenter = 0
-
-        # cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
-        #             cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
-
-        if (distFromCenter > SLOUCH_THRESH):
-            # detected slouch
-            if startTime == None:
-                startTime = currTime
-            cv.circle(frame, (30, 30), 10, (0, 150 - distFromCenter, 150 + distFromCenter), -1)
-            cv.putText(frame, "Stop slouching!", (10, 25),
-                        cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-        else:
-            startTime = None
-            cv.circle(frame, (30, 30), 10, (0, 255, 0), -1)
-
-    else:
+    if noShoulderData:
         # can't find contours
         startTime = None
         cv.putText(frame, "Can't find face/shoulders", (10, 25),
