@@ -1,4 +1,5 @@
 import math
+import numpy as np
 
 class DataClassifier:
     def __init__(self,frameData, calibratedData):
@@ -35,13 +36,13 @@ class DataClassifier:
         weightedSum = 0
 
         angleWeight = 1
-        weightedSum += self.getAngleDifference() * angleWeight
+        weightedSum += self.getAngleDifference()/180 * angleWeight
 
-        ratioDifference = self.getEyeShoulderRatio(classify = True) - self.getEyeShoulderRatio()
+        ratioDifference = self.getEyeShoulderRatio(classify = True) / self.getEyeShoulderRatio()
         ratioWeight = 1
-        weightedSum += ratioDifference + ratioWeight
+        weightedSum += ratioDifference * ratioWeight
 
-        return weightedSum 
+        return sigmoid(weightedSum)
 
     #returns angle difference between calib and frame angle in degrees
     def getAngleDifference(self):
@@ -61,3 +62,6 @@ class DataClassifier:
 
         shoulderWidth = self.right_beginning[classify][0] - self.left_beginning[classify][0]
         return eyeWidth/shoulderWidth
+
+    def sigmoid(num):
+        return 1/(1 + np.exp(-num))
