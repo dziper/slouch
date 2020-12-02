@@ -7,6 +7,7 @@ import pymsgbox
 import copy
 from eyeDetector import get_eyes
 from shoulderTracking import detectShoulders
+from dataClassifier import DataClassifier
 import csv
 import math
 
@@ -40,6 +41,8 @@ stream = cv.VideoCapture(args["source"])
 # boundaries for photo.png
 name = "frames"
 cv.namedWindow(name)
+
+classifier = None
 
 # set up mouse movement detection
 mouseX = None
@@ -151,12 +154,20 @@ while key != ESC:
         else:
             noShoulderData = True
 
+    if not classifier is None:
+        classifier.newData(frameData)
+        slouchConfidence = classifier.classify()
+
+        cv.putText(frame, "Confidence: " + str(np.round(slouchConfidence, decimals = 3)), (10, 100),
+                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+
+        print(slouchConfidence)
 
     if(not noShoulderData):
-        distFromCenter = np.abs(angleBetween - centerAngle)
+        distFromCenter = 0
 
-        cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
-                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+        # cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
+        #             cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
         if (distFromCenter > SLOUCH_THRESH):
             # detected slouch
@@ -199,9 +210,14 @@ while key != ESC:
     # cv.imshow(name, frame)
 
     if key == ord('c'):
+        if len(frameData) == 8:
+            if classifier is None:
+                classifier = DataClassifier(frameData, frameData)
+            else:
+                classifier.newData(frameData, classify = True)
         # if user presses C
-        print("calibrated current angle")
-        centerAngle = angleBetween
+        print("calibrated classifier")
+
 
     if key == ord('p'):
         # if user presses P
