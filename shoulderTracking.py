@@ -13,6 +13,8 @@ faceCascade = cv.CascadeClassifier('CascadeClassifiers/faceCascade.xml')
 colorBounds = ([170, 90, 15], [185, 190, 200])
 
 def highestWhite(gray, x, minY = 0):
+    if x >= gray.shape[1] or x < 0 or minY >= gray.shape[0] or minY < 0:
+        return None 
     x = int(x)
     minY = int(minY)
     column = gray[minY:,x]
