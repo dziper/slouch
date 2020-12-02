@@ -29,6 +29,8 @@ colorBounds = ([5, 130, 150], [10, 190, 255])
 croppedImage = None
 croppedHSV = None
 
+slider_scale = 0.5
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
 args = vars(ap.parse_args())
@@ -79,6 +81,20 @@ def add_line_to_csv(filename, datalist):
         writer = csv.writer(currFile, delimiter=',', quotechar='"')
         writer.writerow(datalist)
 
+
+def make_trackbar(window):
+    cv.createTrackbar("Slide for shoulder distance", window, 0, 20, find_x_scale)
+
+
+def find_x_scale(value):
+    slider_scale = (value / 40) + 0.1
+
+def plot_points(img, point_list):
+    for (x,y) in point_list:
+        int_x = int(x)
+        int_y = int(y)
+        image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
+
 cv.setMouseCallback(name, getMousePos)
 
 (grabbed, frame) = stream.read()
@@ -110,6 +126,7 @@ while key != ESC:
     # eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+    make_trackbar("frames")
 
     mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
@@ -117,13 +134,13 @@ while key != ESC:
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     cv.imshow("mask", mask)
 
-    shoulderData = detectShoulders(gray, mask)
+    shoulderData = detectShoulders(gray, mask, slider_scale)
     noShoulderData = False
     if shoulderData is None:
         # print("No shoulder Data")
         noShoulderData = True
     else:
-        right_line, right_slope, left_line, left_slope = shoulderData
+        right_line, right_slope, left_line, left_slope, right_points, left_points = shoulderData
 
         if not (np.isnan((right_slope,left_slope)).any() or np.isnan(right_line).any() or np.isnan(left_line).any()):
             right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
@@ -146,7 +163,8 @@ while key != ESC:
 
         cv.putText(frame, "Angle: " + str(np.round(distFromCenter, decimals = 3)), (10, 100),
                     cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
-
+        plot_points(frame, right_points)
+        plot_points(frame, left_points)
         if (distFromCenter > SLOUCH_THRESH):
             # detected slouch
             if startTime == None:

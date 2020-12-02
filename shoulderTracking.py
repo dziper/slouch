@@ -22,7 +22,7 @@ def highestWhite(gray, x, minY = 0):
             return i+minY
     return None
 
-def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
+def detect_shoulder(gray, face, direction, x_scale=0.35, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
     # x_scale = 0.7
@@ -73,7 +73,7 @@ def plotPoints(img, pointList, color = (0,0,255)):
         y = int(point[1])
         img[y,x] = color
 
-def detectShoulders(gray, mask):
+def detectShoulders(gray, mask, scale):
     #Now use the haar cascade detector to find all faces in the image
     faces = faceCascade.detectMultiScale(gray, 1.3, 5)
     maxArea = 0
@@ -104,8 +104,8 @@ def detectShoulders(gray, mask):
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
-        rightShoulderData = detect_shoulder(mask, bigFace, "right")
-        leftShoulderData = detect_shoulder(mask, bigFace, "left")
+        rightShoulderData = detect_shoulder(mask, bigFace, "right", x_scale=scale)
+        leftShoulderData = detect_shoulder(mask, bigFace, "left", x_scale=scale)
 
         if rightShoulderData is None or leftShoulderData is None:
             return None
@@ -113,7 +113,7 @@ def detectShoulders(gray, mask):
         right_line, right_slope, right_points = rightShoulderData
         left_line, left_slope, left_points = leftShoulderData
 
-        return right_line, right_slope, left_line, left_slope
+        return right_line, right_slope, left_line, left_slope, right_points, left_points
     else:
         pass
         # print("No face")
