@@ -50,8 +50,7 @@ class DataClassifier:
 
         weightedSum += angleDiffVal + ratioVal
 
-        print("sum")
-        print(weightedSum)
+        # TODO: Add Eye Angle
 
         return (DataClassifier.sigmoid(weightedSum) - 0.5)*2
 
