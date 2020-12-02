@@ -50,7 +50,7 @@ class DataClassifier:
 
         weightedSum += angleDiffVal + ratioVal
 
-        # TODO: Add Eye Angle
+        # TODO: Add Eye Angle, eye width vs shoulder to eye Y dist ratio
 
         return (DataClassifier.sigmoid(weightedSum) - 0.5)*2
 
