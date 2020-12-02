@@ -3,7 +3,7 @@
 #Import the OpenCV library
 import cv2 as cv
 import numpy as np
-from scipy import stats;
+from scipy import stats
 import math
 import lineDetection
 
@@ -30,18 +30,18 @@ def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
     HEIGHT_MULTIPLIER = 1
 
     # define shoulder box componenets
-    w = int(x_scale * w_face);
-    h = int(y_scale * h_face);
+    w = int(x_scale * w_face)
+    h = int(y_scale * h_face)
     y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
     if(direction == "right"): x = x_face + w_face; # right end of the face box
     if(direction == "left"): x = x_face - w; # w to the left of the start of face box
-    rectangle = (x, y, w, h);
+    rectangle = (x, y, w, h)
 
     # calculate position of shoulder in each x strip
     x_positions = np.array([])
     y_positions = np.array([])
     for delta_x in range(w):
-        this_x = x + delta_x;
+        this_x = x + delta_x
         # this_y = calculate_max_contrast_pixel(gray, this_x, y, h);
         this_y = highestWhite(gray, this_x, minY = y_face + h_face/2)
         if(this_y is None): continue; # dont add if no clear best value
