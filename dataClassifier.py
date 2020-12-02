@@ -4,7 +4,7 @@ import numpy as np
 class DataClassifier:
     def __init__(self,frameData, calibratedData):
         if len(frameData) != 8 or len(calibratedData) != 8:
-            return False
+            print("classifier is NONE")
         self.right_eye = (frameData[0], calibratedData[0])
         self.left_eye = (frameData[1], calibratedData[1])
         self.right_beginning = (frameData[2], calibratedData[2])
@@ -13,8 +13,6 @@ class DataClassifier:
         self.left_beginning = (frameData[5], calibratedData[5])
         self.left_end = (frameData[6], calibratedData[6])
         self.left_slope = (frameData[7], calibratedData[7])
-
-        return True
 
     #update data
     def newData(self, data, classify = False):
@@ -36,11 +34,12 @@ class DataClassifier:
         weightedSum = 0
 
         angleWeight = 1
-        weightedSum += self.getAngleDifference()/180 * angleWeight
+        weightedSum += np.abs(self.getAngleDifference()/180 * angleWeight)
 
-        ratioDifference = self.getEyeShoulderRatio(classify = True) / self.getEyeShoulderRatio()
+        ratioDifference = self.getEyeShoulderRatio(classify = True) - self.getEyeShoulderRatio()
+        invRatioDifference = 1/self.getEyeShoulderRatio(classify = True) - 1/self.getEyeShoulderRatio()
         ratioWeight = 1
-        weightedSum += ratioDifference * ratioWeight
+        weightedSum += np.abs(ratioDifference+invRatioDifference) * ratioWeight
 
         return sigmoid(weightedSum)
 
