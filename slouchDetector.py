@@ -30,6 +30,7 @@ croppedImage = None
 croppedHSV = None
 
 slider_scale = 0.5
+add_to_x = 0
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
@@ -82,12 +83,17 @@ def add_line_to_csv(filename, datalist):
         writer.writerow(datalist)
 
 
-def make_trackbar(window):
+def make_trackbar_outside(window):
     cv.createTrackbar("Slide for shoulder distance", window, 0, 20, find_x_scale)
-
 
 def find_x_scale(value):
     slider_scale = (value / 40) + 0.1
+
+def make_trackbar_inside(window):
+    cv.createTrackbar("Slide to increase distance from neck", window, 0, 20, change_inside)
+
+def change_inside(value):
+    add_to_x = value/20
 
 def plot_points(img, point_list):
     for (x,y) in point_list:
@@ -126,7 +132,8 @@ while key != ESC:
     # eyeLoc1, eyeLoc2 = get_eyes(frame)
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-    make_trackbar("frames")
+    make_trackbar_outside("frames")
+    make_trackbar_inside("frames")
 
     mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
@@ -134,7 +141,7 @@ while key != ESC:
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     cv.imshow("mask", mask)
 
-    shoulderData = detectShoulders(gray, mask, slider_scale)
+    shoulderData = detectShoulders(gray, mask, slider_scale, add_to_x)
     noShoulderData = False
     if shoulderData is None:
         # print("No shoulder Data")
