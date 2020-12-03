@@ -11,6 +11,9 @@ from dataClassifier import DataClassifier
 import csv
 import math
 
+
+ESC = 27
+
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
 
@@ -43,72 +46,7 @@ stream.set(4, 480)
 colorBounds = None
 key = -1
 
-while(key != ord('q')):
-    key = cv.waitKey(1) & 0xFF
-
-    ret, frame = stream.read()
-    cv.imshow('frame',frame)
-
-    if cv.waitKey(1) & 0xFF == ord('x'):
-        cv.imwrite('image.jpg',frame)
-        frame = cv.imread('image.jpg')
-        clone = frame.copy()
-        cv.namedWindow("image")
-        cv.setMouseCallback("image", click_n_crop)
-
-        # keep looping until the 'q' key is pressed
-        while True:
-            # display the image and wait for a keypress
-            cv.imshow("image", frame)
-            key = cv.waitKey(1) & 0xFF
-            # if the 'r' key is pressed, reset the cropping region
-            if key == ord("r"):
-                frame = clone.copy()
-            # if the 'c' key is pressed, break from the loop
-            elif key == ord("c"):
-                break
-        # if there are two reference points, then crop the region of interest
-        # from the image and display it
-        if len(refPt) == 2:
-            croppedImage = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
-            # cv.imshow("ROI", roi)
-            # cv.waitKey(0)
-
-            print(refPt)
-
-            croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
-            minCroppedHSV = list(croppedHSV[0,0])
-            maxCroppedHSV = list(croppedHSV[0,0])
-
-            hues = np.array([])
-
-            totalHSV = 0
-            for i in range(0, croppedHSV.shape[0]):
-                for j in range(0, croppedHSV.shape[1]):
-                    for k in range(3):
-                        val = croppedHSV[i,j][k] #loop through h,s,v
-                        if k == 0:
-                            hues = np.append(hues, val)
-                        if val < minCroppedHSV[k]:
-                            minCroppedHSV[k] = val
-                        if val > maxCroppedHSV[k]:
-                            maxCroppedHSV[k] = val
-
-            # avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
-
-            # print(croppedHSV.size)
-            medHue = np.median(hues)
-            minCroppedHSV[0] = medHue - 5
-            maxCroppedHSV[0] = medHue + 5
-            colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
-            print(minCroppedHSV)
-            print(maxCroppedHSV)
-
-SLOUCH_THRESH = 5
 SLOUCH_TIMER = 5
-MAX_COUNTOUR_SIZE = 800
-
-ESC = 27
 
 centerAngle = 54
 angleBetween = 0
@@ -127,7 +65,7 @@ args = vars(ap.parse_args())
 #cv.imshow("Image", image)
 
 # boundaries for photo.png
-name = "frames"
+name = "frame"
 cv.namedWindow(name)
 
 classifier = None
@@ -165,6 +103,74 @@ currTime = None
 
 if not frame.size == 0:
     getMinY = frame[0,0,0]
+
+while(key != ord('q')):
+    key = cv.waitKey(1) & 0xFF
+
+    ret, frame = stream.read()
+    cv.imshow('frame',frame)
+
+    if key == ord('x'):
+        image = frame.copy()
+        cv.namedWindow("image")
+        print("mouse thing")
+        cv.setMouseCallback("image", click_n_crop)
+
+        cancelCrop = False
+        # keep looping until the 'q' key is pressed
+        while True:
+            # display the image and wait for a keypress
+            cv.imshow("image", frame)
+            key = cv.waitKey(1) & 0xFF
+            # if the 'r' key is pressed, reset the cropping region
+            if key == ord("r"):
+                frame = clone.copy()
+            # if the 'c' key is pressed, break from the loop
+            elif key == ord("c"):
+                cv.destroyWindow("image")
+                break
+            elif key == ESC:
+                cancelCrop = True
+                break
+        if cancelCrop:
+            break
+
+        # if there are two reference points, then crop the region of interest
+        # from the image and display it
+        if len(refPt) == 2:
+            croppedImage = image[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
+            # cv.imshow("ROI", roi)
+            # cv.waitKey(0)
+
+            print(refPt)
+
+            croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
+            minCroppedHSV = list(croppedHSV[0,0])
+            maxCroppedHSV = list(croppedHSV[0,0])
+
+            hues = np.array([])
+
+            totalHSV = 0
+            for i in range(0, croppedHSV.shape[0]):
+                for j in range(0, croppedHSV.shape[1]):
+                    for k in range(3):
+                        val = croppedHSV[i,j][k] #loop through h,s,v
+                        if k == 0:
+                            hues = np.append(hues, val)
+                        if val < minCroppedHSV[k]:
+                            minCroppedHSV[k] = val
+                        if val > maxCroppedHSV[k]:
+                            maxCroppedHSV[k] = val
+
+            # avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
+
+            # print(croppedHSV.size)
+            medHue = np.median(hues)
+            minCroppedHSV[0] = medHue - 5
+            maxCroppedHSV[0] = medHue + 5
+            colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
+            print(minCroppedHSV)
+            print(maxCroppedHSV)
 
 while key != ESC:
     currTime = datetime.datetime.now()
