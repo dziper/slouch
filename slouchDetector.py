@@ -108,6 +108,11 @@ while(key != ord('q')):
     key = cv.waitKey(1) & 0xFF
 
     ret, frame = stream.read()
+
+    if frame is None:
+        print("skipped frame")
+        continue
+
     cv.imshow('frame',frame)
 
     if key == ord('x'):
@@ -177,6 +182,9 @@ while key != ESC:
 
     if not togglePause:
         (grabbed, frame) = stream.read()
+        if frame is None:
+            print("skipped frame")
+            continue
         cleanFrame = frame.copy()
 
     if togglePause:

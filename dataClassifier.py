@@ -37,16 +37,16 @@ class DataClassifier:
         angleDiffVal = np.abs(self.getAngleDifference()/180 * angleWeight)
 
         ratioDifference = self.getEyeShoulderRatio(classify = True)/self.getEyeShoulderRatio()
-        print(self.getEyeShoulderRatio())
-        print(self.getEyeShoulderRatio(classify = True))
-        print(ratioDifference)
+        # print(self.getEyeShoulderRatio())
+        # print(self.getEyeShoulderRatio(classify = True))
+        # print(ratioDifference)
         invRatioDifference = 1/ratioDifference
         ratioDifference = max(ratioDifference,invRatioDifference) - 1
         ratioWeight = 0.5
         ratioVal = np.abs(ratioDifference) * ratioWeight
 
-        print("ratio")
-        print(ratioDifference)
+        # print("ratio")
+        # print(ratioDifference)
 
         weightedSum += angleDiffVal + ratioVal
 
