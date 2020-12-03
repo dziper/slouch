@@ -135,7 +135,7 @@ while(key != ord('q')):
         print("skipped frame")
         continue
 
-    cv.imshow('frame',frame)
+    cv.imshow(name,frame)
 
     if key == ord('x'):
         image = frame.copy()
@@ -254,6 +254,8 @@ while key != ESC:
 
             # slopeDiff = right_slope - left_slope
             # angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
+            plot_points(frame, right_points)
+            plot_points(frame, left_points)
 
             frameData += (right_beginning, right_end, right_slope)
             frameData += (left_beginning, left_end, left_slope)
