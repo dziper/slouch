@@ -24,7 +24,7 @@ def highestWhite(gray, x, minY = 0):
             return i+minY
     return None
 
-def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
+def detect_shoulder(gray, face, direction, add_to_x, x_scale=0.35, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
 
     # x_scale = 0.7
@@ -35,8 +35,8 @@ def detect_shoulder(gray, face, direction, x_scale=0.5, y_scale=0.75):
     w = int(x_scale * w_face)
     h = int(y_scale * h_face)
     y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
-    if(direction == "right"): x = x_face + w_face; # right end of the face box
-    if(direction == "left"): x = x_face - w; # w to the left of the start of face box
+    if(direction == "right"): x = x_face + w_face + add_to_x; # right end of the face box
+    if(direction == "left"): x = x_face - w + add_to_x; # w to the left of the start of face box
     rectangle = (x, y, w, h)
 
     # calculate position of shoulder in each x strip
@@ -75,7 +75,7 @@ def plotPoints(img, pointList, color = (0,0,255)):
         y = int(point[1])
         img[y,x] = color
 
-def detectShoulders(gray, mask):
+def detectShoulders(gray, mask, scale, add_to_x):
     #Now use the haar cascade detector to find all faces in the image
     faces = faceCascade.detectMultiScale(gray, 1.3, 5)
     maxArea = 0
@@ -106,8 +106,8 @@ def detectShoulders(gray, mask):
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
-        rightShoulderData = detect_shoulder(mask, bigFace, "right")
-        leftShoulderData = detect_shoulder(mask, bigFace, "left")
+        rightShoulderData = detect_shoulder(mask, bigFace, "right", add_to_x, x_scale=scale)
+        leftShoulderData = detect_shoulder(mask, bigFace, "left", add_to_x, x_scale=scale)
 
         if rightShoulderData is None or leftShoulderData is None:
             return None
@@ -115,7 +115,7 @@ def detectShoulders(gray, mask):
         right_line, right_slope, right_points = rightShoulderData
         left_line, left_slope, left_points = leftShoulderData
 
-        return right_line, right_slope, left_line, left_slope
+        return right_line, right_slope, left_line, left_slope, right_points, left_points
     else:
         pass
         # print("No face")

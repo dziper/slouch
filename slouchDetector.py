@@ -58,6 +58,9 @@ getMinY = None
 croppedImage = None
 croppedHSV = None
 
+slider_scale = 0.5
+add_to_x = 0
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
 args = vars(ap.parse_args())
@@ -88,6 +91,25 @@ def add_line_to_csv(filename, datalist):
     with open(filename, mode='a') as currFile:
         writer = csv.writer(currFile, delimiter=',', quotechar='"')
         writer.writerow(datalist)
+
+
+def make_trackbar_outside(window):
+    cv.createTrackbar("Slide for shoulder distance", window, 0, 20, find_x_scale)
+
+def find_x_scale(value):
+    slider_scale = (value / 40) + 0.1
+
+def make_trackbar_inside(window):
+    cv.createTrackbar("Slide to increase distance from neck", window, 0, 20, change_inside)
+
+def change_inside(value):
+    add_to_x = value/20
+
+def plot_points(img, point_list):
+    for (x,y) in point_list:
+        int_x = int(x)
+        int_y = int(y)
+        image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
 
 cv.setMouseCallback(name, getMousePos)
 
@@ -194,6 +216,8 @@ while key != ESC:
     upper = np.array(colorBounds[1], dtype="uint8")
 
     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+    make_trackbar_outside(name)
+    make_trackbar_inside(name)
 
     mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
@@ -211,13 +235,13 @@ while key != ESC:
         frameData.append(eyeLoc1)
         frameData.append(eyeLoc2)
 
-    shoulderData = detectShoulders(gray, mask)
+    shoulderData = detectShoulders(gray, mask, slider_scale, add_to_x)
     noShoulderData = False
     if shoulderData is None:
         # print("No shoulder Data")
         noShoulderData = True
     else:
-        right_line, right_slope, left_line, left_slope = shoulderData
+        right_line, right_slope, left_line, left_slope, right_points, left_points = shoulderData
 
         if not (np.isnan((right_slope,left_slope)).any() or np.isnan(right_line).any() or np.isnan(left_line).any()):
             right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
@@ -242,6 +266,8 @@ while key != ESC:
 
         cv.putText(frame, "Confidence: " + str(np.round(slouchConfidence, decimals = 3)), (10, 100),
                     cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+        plot_points(frame, right_points)
+        plot_points(frame, left_points)
 
         circleColor = (0,255,0)
         if slouchConfidence > 0.5:
