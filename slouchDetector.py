@@ -14,6 +14,96 @@ import math
 # need this line or else get weird abort when you run another popup
 # pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
 
+def click_n_crop(event, x, y, flags, param):
+	# grab references to the global variables
+	global refPt, cropping
+	# if the left mouse button was clicked, record the starting
+	# (x, y) coordinates and indicate that cropping is being
+	# performed
+	if event == cv.EVENT_LBUTTONDOWN:
+		refPt = [(x, y)]
+		cropping = True
+	# check to see if the left mouse button was released
+	elif event == cv.EVENT_LBUTTONUP:
+		# record the ending (x, y) coordinates and indicate that
+		# the cropping operation is finished
+		refPt.append((x, y))
+		cropping = False
+		# draw a rectangle around the region of interest
+		cv.rectangle(frame, refPt[0], refPt[1], (0, 255, 0), 2)
+		cv.imshow("image", frame)
+
+stream = cv.VideoCapture(0)
+if not (stream.isOpened()):
+    print("Could not open video device")
+
+stream.set(3, 640)
+stream.set(4, 480)
+
+colorBounds = None
+key = -1
+
+while(key != ord('q')):
+    key = cv.waitKey(1) & 0xFF
+
+    ret, frame = stream.read()
+    cv.imshow('frame',frame)
+
+    if cv.waitKey(1) & 0xFF == ord('x'):
+        cv.imwrite('image.jpg',frame)
+        frame = cv.imread('image.jpg')
+        clone = frame.copy()
+        cv.namedWindow("image")
+        cv.setMouseCallback("image", click_n_crop)
+
+        # keep looping until the 'q' key is pressed
+        while True:
+            # display the image and wait for a keypress
+            cv.imshow("image", frame)
+            key = cv.waitKey(1) & 0xFF
+            # if the 'r' key is pressed, reset the cropping region
+            if key == ord("r"):
+                frame = clone.copy()
+            # if the 'c' key is pressed, break from the loop
+            elif key == ord("c"):
+                break
+        # if there are two reference points, then crop the region of interest
+        # from the image and display it
+        if len(refPt) == 2:
+            croppedImage = clone[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
+            # cv.imshow("ROI", roi)
+            # cv.waitKey(0)
+
+            print(refPt)
+
+            croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
+            minCroppedHSV = list(croppedHSV[0,0])
+            maxCroppedHSV = list(croppedHSV[0,0])
+
+            hues = np.array([])
+
+            totalHSV = 0
+            for i in range(0, croppedHSV.shape[0]):
+                for j in range(0, croppedHSV.shape[1]):
+                    for k in range(3):
+                        val = croppedHSV[i,j][k] #loop through h,s,v
+                        if k == 0:
+                            hues = np.append(hues, val)
+                        if val < minCroppedHSV[k]:
+                            minCroppedHSV[k] = val
+                        if val > maxCroppedHSV[k]:
+                            maxCroppedHSV[k] = val
+
+            # avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
+
+            # print(croppedHSV.size)
+            medHue = np.median(hues)
+            minCroppedHSV[0] = medHue - 5
+            maxCroppedHSV[0] = medHue + 5
+            colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
+            print(minCroppedHSV)
+            print(maxCroppedHSV)
+
 SLOUCH_THRESH = 5
 SLOUCH_TIMER = 5
 MAX_COUNTOUR_SIZE = 800
@@ -27,7 +117,6 @@ togglePause = False
 getMinY = None
 
 # HSV color bounds
-colorBounds = ([5, 130, 150], [10, 190, 255])
 croppedImage = None
 croppedHSV = None
 
@@ -37,7 +126,6 @@ args = vars(ap.parse_args())
 
 #cv.imshow("Image", image)
 
-stream = cv.VideoCapture(args["source"])
 # boundaries for photo.png
 name = "frames"
 cv.namedWindow(name)
@@ -57,26 +145,6 @@ def getMousePos(event, x, y, flags, param):
 
 refPt = []
 cropping = False
-
-def click_n_crop(event, x, y, flags, param):
-	# grab references to the global variables
-	global refPt, cropping
-	# if the left mouse button was clicked, record the starting
-	# (x, y) coordinates and indicate that cropping is being
-	# performed
-	if event == cv.EVENT_LBUTTONDOWN:
-		refPt = [(x, y)]
-		cropping = True
-	# check to see if the left mouse button was released
-	elif event == cv.EVENT_LBUTTONUP:
-		# record the ending (x, y) coordinates and indicate that
-		# the cropping operation is finished
-		refPt.append((x, y))
-		cropping = False
-		# draw a rectangle around the region of interest
-		cv.rectangle(image, refPt[0], refPt[1], (0, 255, 0), 2)
-		cv.imshow("image", image)
-
 
 def add_line_to_csv(filename, datalist):
     with open(filename, mode='a') as currFile:
@@ -225,6 +293,7 @@ while key != ESC:
     if key == ord('x'):
         image = cleanFrame.copy()
         cv.namedWindow("image")
+        print("mouse thing")
         cv.setMouseCallback("image", click_n_crop)
 
         # keep looping until the 'q' key is pressed
