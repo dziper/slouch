@@ -33,7 +33,7 @@ class DataClassifier:
     def classify(self):
         weightedSum = 0
 
-        angleWeight = 20
+        angleWeight = 25
         angleDiffVal = np.abs(self.getAngleDifference()/180 * angleWeight)
 
         ratioDifference = self.getEyeShoulderHeightRatio(classify = True)/self.getEyeShoulderHeightRatio()
@@ -42,7 +42,7 @@ class DataClassifier:
         ratioWeight = 3
         ratioVal = np.abs(ratioDifference) * ratioWeight
 
-        eyeAngleWeight = 20
+        eyeAngleWeight = 10
         eyeAngleDiffVal = np.abs(self.getEyeAngleDifference()/180 * eyeAngleWeight)
 
         weightedSum += angleDiffVal + ratioVal + eyeAngleDiffVal
