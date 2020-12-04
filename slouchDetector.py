@@ -93,16 +93,12 @@ def add_line_to_csv(filename, datalist):
         writer.writerow(datalist)
 
 
-def nothing(x):
-    pass
-
-
 def make_trackbar_outside(window):
-    cv.createTrackbar("Slide for shoulder distance", window, 10, 20, nothing)
+    cv.createTrackbar("Slide for shoulder distance", window, 10, 20, lambda x: x)
 
 
 def make_trackbar_inside(window):
-    cv.createTrackbar("Slide for distance from neck", window, 0, 20, nothing)
+    cv.createTrackbar("Slide for distance from neck", window, 0, 20, lambda x: x)
 
 
 def plot_points(img, point_list):
