@@ -36,7 +36,7 @@ class DataClassifier:
         angleWeight = 20
         angleDiffVal = np.abs(self.getAngleDifference()/180 * angleWeight)
 
-        ratioDifference = self.getEyeShoulderRatio(classify = True)/self.getEyeShoulderRatio()
+        ratioDifference = self.getEyeShoulderHeightRatio(classify = True)/self.getEyeShoulderHeightRatio()
         # print(self.getEyeShoulderRatio())
         # print(self.getEyeShoulderRatio(classify = True))
         # print(ratioDifference)
@@ -72,6 +72,13 @@ class DataClassifier:
 
         shoulderWidth = self.right_beginning[classify][0] - self.left_beginning[classify][0]
         return eyeWidth/shoulderWidth
+
+    # returns ratio between eye width and shoulder height
+    def getEyeShoulderHeightRatio(self, classify = False):
+        eyeWidth = self.right_eye[classify][0] - self.left_eye[classify][0]
+        maxShoulder = max(max(self.right_end[classify][1],self.left_end[classify][1]),max(self.right_beginning[classify][1],self.left_beginning[classify][1]))
+        shoulderHeight = maxShoulder - max(self.right_eye[classify][1], self.left_eye[classify][1])
+        return np.abs(eyeWidth/shoulderHeight)
 
     @staticmethod
     def sigmoid(num):
