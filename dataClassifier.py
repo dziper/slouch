@@ -37,18 +37,15 @@ class DataClassifier:
         angleDiffVal = np.abs(self.getAngleDifference()/180 * angleWeight)
 
         ratioDifference = self.getEyeShoulderHeightRatio(classify = True)/self.getEyeShoulderHeightRatio()
-        # print(self.getEyeShoulderRatio())
-        # print(self.getEyeShoulderRatio(classify = True))
-        # print(ratioDifference)
         invRatioDifference = 1/ratioDifference
         ratioDifference = max(ratioDifference,invRatioDifference) - 1
-        ratioWeight = 0.5
+        ratioWeight = 3
         ratioVal = np.abs(ratioDifference) * ratioWeight
 
-        # print("ratio")
-        # print(ratioDifference)
+        eyeAngleWeight = 20
+        eyeAngleDiffVal = np.abs(self.getEyeAngleDifference()/180 * eyeAngleWeight)
 
-        weightedSum += angleDiffVal + ratioVal
+        weightedSum += angleDiffVal + ratioVal + eyeAngleDiffVal
 
         # TODO: Add Eye Angle, eye width vs shoulder to eye Y dist ratio
 
@@ -63,6 +60,13 @@ class DataClassifier:
         angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
 
         return calibAngleBetween - angleBetween
+
+    def getEyeAngle(self, classify = False):
+        slope = (self.right_eye[classify][1] - self.left_eye[classify][1])/ (self.right_eye[classify][0] - self.left_eye[classify][0])
+        return np.arctan2(slope,1) * 180 / math.pi
+
+    def getEyeAngleDifference(self):
+        return self.getEyeAngle(classify = True) - self.getEyeAngle()
 
     # returns ratio beterrn eyes and shoulders
     def getEyeShoulderRatio(self, classify=False):
