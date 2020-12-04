@@ -15,7 +15,7 @@ import math
 ESC = 27
 
 # need this line or else get weird abort when you run another popup
-# pymsgbox.alert("Welcome to slouchDetector9000", "Hey!")
+pymsgbox.alert("Welcome to our super spicy slouch detector! Please take a look at the README file before proceeding")
 
 def click_n_crop(event, x, y, flags, param):
 	# grab references to the global variables
@@ -289,18 +289,6 @@ while key != ESC:
     else:
         cv.putText(frame, "cant find mouse", (10, 660), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-    if cursorBGR[0] != -1:
-        rgbString = "R: " + str(cursorBGR[2]) + " G: " + \
-            str(cursorBGR[1]) + " B: " + str(cursorBGR[0])
-
-        hsvString = "H: " + str(cursorHSV[0]) + " S: " + \
-            str(cursorHSV[1]) + " V: " + str(cursorHSV[2])
-
-        mouseString = "X: " + str(mouseX) + " Y: " + str(mouseY)
-
-        cv.putText(frame, hsvString, (10, getMinY + 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv.putText(frame, rgbString, (10, getMinY + 35), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
-        cv.putText(frame, mouseString, (10, getMinY + 55), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255),1)
     # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
     cv.imshow(name, frame)
     # cv.imshow(name, frame)
