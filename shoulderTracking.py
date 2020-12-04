@@ -26,7 +26,7 @@ def highestWhite(gray, x, minY = 0):
 
 def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
-    x_scale = raw_x_scale/40 + 0.1
+    x_scale = raw_x_scale/20
     add_to_x = raw_add_to_x * 10
     # x_scale = 0.7
 

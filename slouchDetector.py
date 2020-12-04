@@ -98,7 +98,7 @@ def nothing(x):
 
 
 def make_trackbar_outside(window):
-    cv.createTrackbar("Slide for shoulder distance", window, 0, 20, nothing)
+    cv.createTrackbar("Slide for shoulder distance", window, 10, 20, nothing)
 
 
 def make_trackbar_inside(window):
