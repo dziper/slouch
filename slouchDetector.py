@@ -111,6 +111,24 @@ def plot_points(img, point_list):
         int_y = int(y)
         image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
 
+def medianOfData(dataHist):
+	dataHist = np.array(dataHist)
+	outData = []
+	for i in range(dataHist.shape[1]):
+		dataColumn = dataHist[:,i]
+		testEl = dataColumn[0]
+		if len(testEl) == 1:
+			outData.append(np.median(dataColumn))
+		else:
+			xs = []
+			ys = []
+			for i in range(dataColumn):
+				xs.append(dataColumn[i][0])
+				ys.append(dataColumn[i][1])
+			outData += (np.median(xs), np.median(ys))
+
+	return outData
+
 cv.setMouseCallback(name, getMousePos)
 
 (grabbed, frame) = stream.read()
@@ -122,6 +140,9 @@ key = -1
 
 startTime = None
 currTime = None
+
+dataHistory = []
+maxDataLength = 30
 
 if not frame.size == 0:
     getMinY = frame[0,0,0]
