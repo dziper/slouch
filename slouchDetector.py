@@ -112,16 +112,11 @@ def plot_points(img, point_list):
         image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
 
 def medianOfData(dataHist):
-    print(dataHist[0])
     dataHist = np.array(dataHist)
-    print(dataHist.shape)
     outData = []
     for i in range(dataHist.shape[1]):
         dataColumn = dataHist[:,i]
         testEl = dataColumn[0] # TODO Cant test len of a float
-
-        print(dataColumn)
-        print(testEl)
 
         if type(testEl) != type((1,1)):
             outData.append(np.median(dataColumn))
@@ -133,7 +128,6 @@ def medianOfData(dataHist):
                 ys.append(dataColumn[i][1])
             outData.append((np.median(xs), np.median(ys)))
 
-    print(outData)
     return outData
 
 cv.setMouseCallback(name, getMousePos)
