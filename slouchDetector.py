@@ -93,23 +93,24 @@ def add_line_to_csv(filename, datalist):
         writer.writerow(datalist)
 
 
-def make_trackbar_outside(window):
-    cv.createTrackbar("Slide for shoulder distance", window, 0, 20, find_x_scale)
+def nothing(x):
+    pass
 
-def find_x_scale(value):
-    slider_scale = (value / 40) + 0.1
+
+def make_trackbar_outside(window):
+    cv.createTrackbar("Slide for shoulder distance", window, 0, 20, nothing)
+
 
 def make_trackbar_inside(window):
-    cv.createTrackbar("Slide to increase distance from neck", window, 0, 20, change_inside)
+    cv.createTrackbar("Slide for distance from neck", window, 0, 20, nothing)
 
-def change_inside(value):
-    add_to_x = value/20
 
 def plot_points(img, point_list):
     for (x,y) in point_list:
         int_x = int(x)
         int_y = int(y)
         image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
+
 
 def medianOfData(dataHist):
     dataHist = np.array(dataHist)
@@ -257,7 +258,9 @@ while key != ESC:
         frameData.append(eyeLoc1)
         frameData.append(eyeLoc2)
 
-    shoulderData = detectShoulders(gray, mask, slider_scale, add_to_x)
+    curr_x_scale = cv.getTrackbarPos("Slide for shoulder distance", name)
+    curr_add_to_x = cv.getTrackbarPos("Slide for distance from neck", name)
+    shoulderData = detectShoulders(gray, mask, curr_x_scale, curr_add_to_x)
     noShoulderData = False
     if shoulderData is None:
         # print("No shoulder Data")

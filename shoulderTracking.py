@@ -24,9 +24,10 @@ def highestWhite(gray, x, minY = 0):
             return i+minY
     return None
 
-def detect_shoulder(gray, face, direction, add_to_x, x_scale=0.35, y_scale=0.75):
+def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.75):
     x_face, y_face, w_face, h_face = face; # define face components
-
+    x_scale = raw_x_scale/40 + 0.1
+    add_to_x = raw_add_to_x * 10
     # x_scale = 0.7
 
     HEIGHT_MULTIPLIER = 1
@@ -36,7 +37,7 @@ def detect_shoulder(gray, face, direction, add_to_x, x_scale=0.35, y_scale=0.75)
     h = int(y_scale * h_face)
     y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
     if(direction == "right"): x = x_face + w_face + add_to_x; # right end of the face box
-    if(direction == "left"): x = x_face - w + add_to_x; # w to the left of the start of face box
+    if(direction == "left"): x = x_face - w - add_to_x; # w to the left of the start of face box
     rectangle = (x, y, w, h)
 
     # calculate position of shoulder in each x strip
@@ -106,8 +107,8 @@ def detectShoulders(gray, mask, scale, add_to_x):
         lower = np.array(colorBounds[0], dtype="uint8")
         upper = np.array(colorBounds[1], dtype="uint8")
 
-        rightShoulderData = detect_shoulder(mask, bigFace, "right", add_to_x, x_scale=scale)
-        leftShoulderData = detect_shoulder(mask, bigFace, "left", add_to_x, x_scale=scale)
+        rightShoulderData = detect_shoulder(mask, bigFace, "right", add_to_x, scale)
+        leftShoulderData = detect_shoulder(mask, bigFace, "left", add_to_x, scale)
 
         if rightShoulderData is None or leftShoulderData is None:
             return None
