@@ -112,17 +112,19 @@ def plot_points(img, point_list):
         image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
 
 def medianOfData(dataHist):
+    print(dataHist[0])
     dataHist = np.array(dataHist)
+    print(dataHist.shape)
     outData = []
     for i in range(dataHist.shape[1]):
         dataColumn = dataHist[:,i]
-        testEl = dataColumn[0]
+        testEl = dataColumn[0] # TODO Cant test len of a float
         if len(testEl) == 1:
             outData.append(np.median(dataColumn))
         else:
             xs = []
             ys = []
-            for i in range(dataColumn):
+            for i in range(len(dataColumn)):
                 xs.append(dataColumn[i][0])
                 ys.append(dataColumn[i][1])
             outData += (np.median(xs), np.median(ys))
@@ -142,7 +144,7 @@ startTime = None
 currTime = None
 
 dataHistory = []
-maxDataLength = 30
+maxHistoryLength = 30
 
 if not frame.size == 0:
     getMinY = frame[0,0,0]
@@ -172,7 +174,7 @@ while(key != ord('q')):
             key = cv.waitKey(1) & 0xFF
             # if the 'r' key is pressed, reset the cropping region
             if key == ord("r"):
-                frame = clone.copy()
+                frame = image.copy()
             # if the 'c' key is pressed, break from the loop
             elif key == ord("c"):
                 cv.destroyWindow("image")
@@ -283,9 +285,14 @@ while key != ESC:
         else:
             noShoulderData = True
 
+    if len(frameData) == 8:
+        dataHistory += [frameData]
+        if len(dataHistory) > maxHistoryLength:
+            dataHistory.pop(0)
 
     if not classifier is None:
-        classifier.newData(frameData)
+        rollingMedian = medianOfData(dataHistory)
+        classifier.newData(rollingMedian)
         slouchConfidence = classifier.classify()
 
         cv.putText(frame, "Confidence: " + str(np.round(slouchConfidence, decimals = 3)), (10, 100),
@@ -316,14 +323,19 @@ while key != ESC:
     # cv.imshow(name, frame)
 
     if key == ord('c'):
-        if len(frameData) == 8:
-            if classifier is None:
-                classifier = DataClassifier(frameData, frameData)
-            else:
-                classifier.newData(frameData, classify = True)
-        # if user presses C
-        print("calibrated classifier")
+        if len(dataHistory) >= maxHistoryLength:
+            calibratedMed = medianOfData(dataHistory)
 
+            if len(frameData) == 8:
+                if classifier is None:
+                    classifier = DataClassifier(calibratedMed, calibratedMed)
+                else:
+                    classifier.newData(calibratedMed, classify = True)
+                print("calibrated classifier")
+        else:
+            print("need more data, try again in a few seconds")
+
+        # if user presses C
 
     if key == ord('p'):
         # if user presses P
