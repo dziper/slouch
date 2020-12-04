@@ -36,7 +36,11 @@ def click_n_crop(event, x, y, flags, param):
 		cv.rectangle(frame, refPt[0], refPt[1], (0, 255, 0), 2)
 		cv.imshow("image", frame)
 
-stream = cv.VideoCapture(0)
+ap = argparse.ArgumentParser()
+ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
+args = vars(ap.parse_args())
+
+stream = cv.VideoCapture(args['source'])
 if not (stream.isOpened()):
     print("Could not open video device")
 
@@ -60,10 +64,6 @@ croppedHSV = None
 
 slider_scale = 0.5
 add_to_x = 0
-
-ap = argparse.ArgumentParser()
-ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
-args = vars(ap.parse_args())
 
 #cv.imshow("Image", image)
 
