@@ -119,7 +119,11 @@ def medianOfData(dataHist):
     for i in range(dataHist.shape[1]):
         dataColumn = dataHist[:,i]
         testEl = dataColumn[0] # TODO Cant test len of a float
-        if len(testEl) == 1:
+
+        print(dataColumn)
+        print(testEl)
+
+        if type(testEl) != type((1,1)):
             outData.append(np.median(dataColumn))
         else:
             xs = []
@@ -127,8 +131,9 @@ def medianOfData(dataHist):
             for i in range(len(dataColumn)):
                 xs.append(dataColumn[i][0])
                 ys.append(dataColumn[i][1])
-            outData += (np.median(xs), np.median(ys))
+            outData.append((np.median(xs), np.median(ys)))
 
+    print(outData)
     return outData
 
 cv.setMouseCallback(name, getMousePos)
