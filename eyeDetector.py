@@ -7,11 +7,11 @@ eye_cascade = cv2.CascadeClassifier('CascadeClassifiers/eyeCascade.xml')
 cap = cv2.VideoCapture(0)
 
 
-def get_eyes(img):
-    # ret, img = cap.read()
+def get_eyes(img): # returns the coordinates of two eyes
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
+    # Find the biggest face present in the frame
     bigFace = (0, 0, 0, 0)
     bigFaceSize = 0
     for (x, y, w, h) in faces:
@@ -19,12 +19,12 @@ def get_eyes(img):
         if currFaceSize > bigFaceSize:
             bigFace = (x, y, w, h)
 
+    # Find eye cascades in the biggest face
     fx, fy, fw, fh = bigFace[0], bigFace[1], bigFace[2], bigFace[3]
-    # cv2.rectangle(img, (fx, fy), (fx+fw, fy+fh), (255,0,0), 2)
     roi_gray = gray[fy:fy + fh, fx:fx + fw]
-    # roi_color = img[fy:fy+fh, fx:fx+fw]
     eyes = eye_cascade.detectMultiScale(roi_gray)
 
+    #Find the highest eyes within the face
     topEye1 = (0, 0, 0, 0)
     topEyeHeight1 = 1000000
     topEye2 = (0, 0, 0, 0)
@@ -40,53 +40,11 @@ def get_eyes(img):
                 topEyeHeight2 = ey
                 topEye2 = (ex, ey, ew, eh)
 
-    # if topEye1 and topEye2:
-    #     cv2.rectangle(roi_color, (topEye1[0], topEye1[2]), (topEye1[0] + topEye1[1], topEye1[2] + topEye1[3]), (0, 255, 0), 2)
-    #     cv2.rectangle(roi_color, (topEye2[0], topEye2[2]), (topEye2[0] + topEye2[1], topEye2[2] + topEye2[3]), (0, 255, 0), 2)
-
-
-
-        # cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
-        # eyesLocString = "X:" + str(ex + (ew / 2)) + " Y:" + str(ey + (eh / 2))
-        # cv2.putText(img, eyesLocString, (10, 660), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-
-    # cv2.imshow('img', img)
     return ((topEye1[0]+(0.5*topEye1[2])), (topEye1[1]+(0.5*topEye1[3]))), ((topEye2[0]+(0.5*topEye2[2])), (topEye2[1]+(0.5*topEye2[3])))
 
 
 ret, img = cap.read()
 eye_pos1, eye_pos2 = get_eyes(img)
-print("1:", eye_pos1, "2:", eye_pos2)
-# while 1: #DON'T RUN this loop -- no end
-#     ret, img = cap.read()
-#     eye_pos1, eye_pos2 = get_eyes(img)
-#     print("1:", eye_pos1, "2:", eye_pos2)
-#     k = cv2.waitKey(30) & 0xff
-#     if k == 27:
-#         break
 
-# while 1:
-#     ret, img = cap.read()
-#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-#     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-#
-#     for (x,y,w,h) in faces:
-#         cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
-#         roi_gray = gray[y:y+h, x:x+w]
-#         roi_color = img[y:y+h, x:x+w]
-#
-#         eyes = eye_cascade.detectMultiScale(roi_gray)
-#         for (ex,ey,ew,eh) in eyes:
-#             cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
-#             eyesLocString = "X:" + str(ex + (ew / 2)) + " Y:" + str(ey + (eh / 2))
-#             cv2.putText(img, eyesLocString, (10, 660), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-#
-#
-#
-#     cv2.imshow('img',img)
-#     k = cv2.waitKey(30) & 0xff
-#     if k == 27:
-#         break
-#
 cap.release()
 cv2.destroyAllWindows()
