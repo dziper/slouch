@@ -2,6 +2,7 @@ import math
 import numpy as np
 
 class DataClassifier:
+    # Initialize the classifier with calibrated Data
     def __init__(self,frameData, calibratedData):
         if len(frameData) != 8 or len(calibratedData) != 8:
             print("classifier is NONE")
@@ -14,19 +15,19 @@ class DataClassifier:
         self.left_end = [frameData[6], calibratedData[6]]
         self.left_slope = [frameData[7], calibratedData[7]]
 
-    #update data
-    def newData(self, data, classify = False):
+    #update data (either data of each frame or )
+    def newData(self, data, calibrate = False):
         if len(data) != 8:
             return False
 
-        self.right_eye[classify] = data[0]
-        self.left_eye[classify] = data[1]
-        self.right_beginning[classify] = data[2]
-        self.right_end[classify] = data[3]
-        self.right_slope[classify] = data[4]
-        self.left_beginning[classify] = data[5]
-        self.left_end[classify] = data[6]
-        self.left_slope[classify] = data[7]
+        self.right_eye[calibrate] = data[0]
+        self.left_eye[calibrate] = data[1]
+        self.right_beginning[calibrate] = data[2]
+        self.right_end[calibrate] = data[3]
+        self.right_slope[calibrate] = data[4]
+        self.left_beginning[calibrate] = data[5]
+        self.left_end[calibrate] = data[6]
+        self.left_slope[calibrate] = data[7]
 
         return True
 
@@ -36,7 +37,7 @@ class DataClassifier:
         angleWeight = 25
         angleDiffVal = np.abs(self.getAngleDifference()/180 * angleWeight)
 
-        ratioDifference = self.getEyeShoulderHeightRatio(classify = True)/self.getEyeShoulderHeightRatio()
+        ratioDifference = self.getEyeShoulderHeightRatio(calibrate = True)/self.getEyeShoulderHeightRatio()
         invRatioDifference = 1/ratioDifference
         ratioDifference = max(ratioDifference,invRatioDifference) - 1
         ratioWeight = 3
@@ -61,27 +62,27 @@ class DataClassifier:
 
         return calibAngleBetween - angleBetween
 
-    def getEyeAngle(self, classify = False):
-        slope = (self.right_eye[classify][1] - self.left_eye[classify][1])/ (self.right_eye[classify][0] - self.left_eye[classify][0])
+    def getEyeAngle(self, calibrate = False):
+        slope = (self.right_eye[calibrate][1] - self.left_eye[calibrate][1])/ (self.right_eye[calibrate][0] - self.left_eye[calibrate][0])
         return np.arctan2(slope,1) * 180 / math.pi
 
     def getEyeAngleDifference(self):
-        return self.getEyeAngle(classify = True) - self.getEyeAngle()
+        return self.getEyeAngle(calibrate = True) - self.getEyeAngle()
 
     # returns ratio beterrn eyes and shoulders
-    def getEyeShoulderRatio(self, classify=False):
-        eyeWidth = self.right_eye[classify][0] - self.left_eye[classify][0]
+    def getEyeShoulderRatio(self, calibrate=False):
+        eyeWidth = self.right_eye[calibrate][0] - self.left_eye[calibrate][0]
 
         # TODO: Check if left/right beginninin or end shoulder points are the end points
 
-        shoulderWidth = self.right_beginning[classify][0] - self.left_beginning[classify][0]
+        shoulderWidth = self.right_beginning[calibrate][0] - self.left_beginning[calibrate][0]
         return eyeWidth/shoulderWidth
 
     # returns ratio between eye width and shoulder height
-    def getEyeShoulderHeightRatio(self, classify = False):
-        eyeWidth = self.right_eye[classify][0] - self.left_eye[classify][0]
-        maxShoulder = max(max(self.right_end[classify][1],self.left_end[classify][1]),max(self.right_beginning[classify][1],self.left_beginning[classify][1]))
-        shoulderHeight = maxShoulder - max(self.right_eye[classify][1], self.left_eye[classify][1])
+    def getEyeShoulderHeightRatio(self, calibrate = False):
+        eyeWidth = self.right_eye[calibrate][0] - self.left_eye[calibrate][0]
+        maxShoulder = max(max(self.right_end[calibrate][1],self.left_end[calibrate][1]),max(self.right_beginning[calibrate][1],self.left_beginning[calibrate][1]))
+        shoulderHeight = maxShoulder - max(self.right_eye[calibrate][1], self.left_eye[calibrate][1])
         return np.abs(eyeWidth/shoulderHeight)
 
     @staticmethod

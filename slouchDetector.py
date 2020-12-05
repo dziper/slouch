@@ -328,7 +328,7 @@ while key != ESC:
                 if classifier is None:
                     classifier = DataClassifier(calibratedMed, calibratedMed)
                 else:
-                    classifier.newData(calibratedMed, classify = True)
+                    classifier.newData(calibratedMed, calibrate = True)
                 print("calibrated classifier")
         else:
             print("need more data, try again in a few seconds")
