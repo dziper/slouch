@@ -122,7 +122,10 @@ def medianOfData(dataHist):
     return outData
 
 (grabbed, frame) = stream.read()
-cleanFrame = frame.copy()
+if frame is not None:
+    cleanFrame = frame.copy()
+    if not frame.size == 0:
+        getMinY = frame[0,0,0]
 
 # Set up timer
 startTime = 0
@@ -133,9 +136,6 @@ SLOUCH_TIMER = 50
 # Set up data history
 dataHistory = []
 maxHistoryLength = 30
-
-if not frame.size == 0:
-    getMinY = frame[0,0,0]
 
 calibrated = False
 
