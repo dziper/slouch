@@ -307,7 +307,7 @@ while key != ESC:
 
     if noShoulderData:
         # can't find face/shoulders
-        startTime = None
+        startTime = startTime - 1
         cv.putText(frame, "Can't find Face/Shoulders", (50, 38),
                     cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2)
 
