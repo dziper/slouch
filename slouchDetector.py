@@ -50,7 +50,7 @@ stream.set(4, 480)
 colorBounds = None
 key = -1
 
-SLOUCH_TIMER = 100
+SLOUCH_TIMER = 50
 
 centerAngle = 54
 angleBetween = 0
@@ -369,6 +369,7 @@ while key != ESC:
                 image = cleanFrame.copy()
             # if the 'c' key is pressed, break from the loop
             elif key == ord("c"):
+                cv.destroyWindow("image")
                 break
         # if there are two reference points, then crop the region of interest
         # from the image and display it
@@ -413,8 +414,9 @@ while key != ESC:
         startTime = 0
     elif circleColor == (0,0,255) and startTime != None:
         startTime = startTime + 1
-        if startTime == SLOUCH_TIMER:
+        if startTime >= SLOUCH_TIMER:
             pymsgbox.alert("Hey you! Stop slouching!")
+            startTime = 0
             pass
 
     key = cv.waitKey(1) & 0xFF
