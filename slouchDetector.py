@@ -50,7 +50,7 @@ stream.set(4, 480)
 colorBounds = None
 key = -1
 
-SLOUCH_TIMER = 5
+SLOUCH_TIMER = 100
 
 centerAngle = 54
 angleBetween = 0
@@ -138,6 +138,7 @@ key = -1
 
 startTime = None
 currTime = None
+circleColor = None
 
 dataHistory = []
 maxHistoryLength = 30
@@ -407,10 +408,13 @@ while key != ESC:
             print(minCroppedHSV)
             print(maxCroppedHSV)
 
-    if startTime != None:
-        if (currTime-startTime).total_seconds() > SLOUCH_TIMER:
-            # pymsgbox.alert("Stop slouching!", "Hey!")
-            # print("Slouch Timer!")
+    # Slouch alerts
+    if circleColor == (0,255,0):
+        startTime = 0
+    elif circleColor == (0,0,255) and startTime != None:
+        startTime = startTime + 1
+        if startTime == SLOUCH_TIMER:
+            pymsgbox.alert("Hey you! Stop slouching!")
             pass
 
     key = cv.waitKey(1) & 0xFF
