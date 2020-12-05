@@ -291,21 +291,28 @@ while key != ESC:
         classifier.newData(rollingMedian)
         slouchConfidence = classifier.classify()
 
-        cv.putText(frame, "Confidence: " + str(np.round(slouchConfidence, decimals = 3)), (10, 100),
-                    cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
+        if not noShoulderData:
+            cv.putText(frame, "Slouch Level: " + str(np.round(slouchConfidence, decimals = 3)), (50, 38),
+                        cv.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+
         plot_points(frame, right_points)
         plot_points(frame, left_points)
 
         circleColor = (0,255,0)
         if slouchConfidence > 0.5:
             circleColor = (0,0,255)
-        cv.circle(frame, (30, 50), 10, circleColor, -1)
+        cv.circle(frame, (30, 30), 10, circleColor, -1)
+
+        cv.putText(frame, "Slouch Meter:", (20, frame.shape[0] - 17), cv.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
+        cv.line(frame, (200,frame.shape[0] - 20), (600,frame.shape[0] - 20), (255, 255, 255), 3)
+        if not (startTime is None):
+            cv.line(frame, (200,frame.shape[0] - 20), (200 + int(400 * (startTime+1)/SLOUCH_TIMER),frame.shape[0] - 20), (0, 0, 255), 3)
 
     if noShoulderData:
         # can't find contours
         startTime = None
-        cv.putText(frame, "Can't find face/shoulders", (10, 25),
-                    cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 3)
+        cv.putText(frame, "Can't find Face/Shoulders", (50, 38),
+                    cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2)
 
     cursorBGR = [-1, -1, -1]
     if mouseX != None and mouseX < len(frame[0]):
