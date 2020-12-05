@@ -15,7 +15,7 @@ import math
 ESC = 27
 
 # need this line or else get weird abort when you run another popup
-pymsgbox.alert("Welcome to our super spicy slouch detector! Please take a look at the README file before proceeding")
+pymsgbox.alert("Welcome to our Super Spicy Slouch Detector!", "Please take a look at the README file before proceeding.")
 
 def click_n_crop(event, x, y, flags, param):
     # grab references to the global variables
@@ -302,7 +302,7 @@ while key != ESC:
         circleColor = (0,255,0)
         if slouchConfidence > 0.5:
             circleColor = (0,0,255)
-        cv.circle(frame, (30, 30), 10, circleColor, -1)
+        cv.circle(frame, (30, 50), 10, circleColor, -1)
 
     if noShoulderData:
         # can't find contours
