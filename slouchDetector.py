@@ -43,6 +43,7 @@ args = vars(ap.parse_args())
 stream = cv.VideoCapture(args['source'])
 if not (stream.isOpened()):
     print("Could not open video device")
+    quit()
 
 stream.set(3, 640)
 stream.set(4, 480)
@@ -132,8 +133,6 @@ cv.setMouseCallback(name, getMousePos)
 (grabbed, frame) = stream.read()
 cleanFrame = frame.copy()
 
-print("frame shape: " + str(frame.shape))
-
 key = -1
 
 startTime = None
@@ -146,7 +145,9 @@ maxHistoryLength = 30
 if not frame.size == 0:
     getMinY = frame[0,0,0]
 
-while(key != ord('q')):
+calibrated = False
+
+while(not calibrated):
     key = cv.waitKey(1) & 0xFF
 
     ret, frame = stream.read()
@@ -160,7 +161,6 @@ while(key != ord('q')):
     if key == ord('x'):
         image = frame.copy()
         cv.namedWindow("image")
-        print("mouse thing")
         cv.setMouseCallback("image", click_n_crop)
 
         cancelCrop = False
@@ -189,8 +189,6 @@ while(key != ord('q')):
             # cv.imshow("ROI", roi)
             # cv.waitKey(0)
 
-            print(refPt)
-
             croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
             minCroppedHSV = list(croppedHSV[0,0])
             maxCroppedHSV = list(croppedHSV[0,0])
@@ -216,8 +214,7 @@ while(key != ord('q')):
             minCroppedHSV[0] = medHue - 5
             maxCroppedHSV[0] = medHue + 5
             colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
-            print(minCroppedHSV)
-            print(maxCroppedHSV)
+            calibrated = True
 
 while key != ESC:
     currTime = datetime.datetime.now()
@@ -341,22 +338,9 @@ while key != ESC:
         print("play/pause")
         togglePause = not togglePause
 
-    if key == ord('s'):
-        ds = str(currTime)
-        cutString = ds[0:10] + "-" + ds[11:19]
-        dateString = cutString.replace(":", "-")
-        cleanFile = "dataImages/Clean/"+"Clean"+dateString+".jpg"
-        overlayFile = "dataImages/Overlay/"+"Overlay"+dateString+".jpg"
-
-        cv.imwrite(cleanFile, cleanFrame)
-        print("Saving Clean Frame in " + cleanFile)
-        cv.imwrite(overlayFile, frame)
-        print("Saving Overlay Frame in " + overlayFile)
-
     if key == ord('x'):
         image = cleanFrame.copy()
         cv.namedWindow("image")
-        print("mouse thing")
         cv.setMouseCallback("image", click_n_crop)
 
         # keep looping until the 'q' key is pressed
@@ -377,8 +361,6 @@ while key != ESC:
             croppedImage = cleanFrame[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
             # cv.imshow("ROI", roi)
             # cv.waitKey(0)
-
-            print(refPt)
 
             croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
             minCroppedHSV = list(croppedHSV[0,0])
@@ -406,8 +388,6 @@ while key != ESC:
             minCroppedHSV[0] = medHue - 5
             maxCroppedHSV[0] = medHue + 5
             colorBounds = (tuple(minCroppedHSV), tuple(maxCroppedHSV))
-            print(minCroppedHSV)
-            print(maxCroppedHSV)
 
     # Slouch alerts
     if circleColor == (0,255,0):
