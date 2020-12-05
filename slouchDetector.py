@@ -14,7 +14,7 @@ import math
 
 ESC = 27
 
-# need this line or else get weird abort when you run another popup
+# Intro!
 pymsgbox.alert("Welcome to our Super Spicy Slouch Detector! \nPlease take a look at the README file before proceeding.")
 
 def click_n_crop(event, x, y, flags, param):
@@ -45,58 +45,50 @@ if not (stream.isOpened()):
     print("Could not open video device")
     quit()
 
+# Set resolution of frame
 stream.set(3, 640)
 stream.set(4, 480)
 
+# Threshold boundaries
+# HSV color bounds
 colorBounds = None
 key = -1
 
-SLOUCH_TIMER = 50
-
-centerAngle = 54
-angleBetween = 0
 togglePause = False
 
 getMinY = None
 
-# HSV color bounds
+# Set up image cropping
 croppedImage = None
 croppedHSV = None
+refPt = []
+cropping = False
 
 slider_scale = 0.5
 add_to_x = 0
 
-#cv.imshow("Image", image)
-
-# boundaries for photo.png
+# Set up window
 name = "frame"
 cv.namedWindow(name)
 
+# Init classifier
 classifier = None
 
 # set up mouse movement detection
 mouseX = None
 mouseY = None
 
-
+# Detect mouse position
 def getMousePos(event, x, y, flags, param):
     global mouseX, mouseY
     if event == cv.EVENT_MOUSEMOVE:
         mouseX = x
         mouseY = y
-
-refPt = []
-cropping = False
-
-def add_line_to_csv(filename, datalist):
-    with open(filename, mode='a') as currFile:
-        writer = csv.writer(currFile, delimiter=',', quotechar='"')
-        writer.writerow(datalist)
+cv.setMouseCallback(name, getMousePos)
 
 # Create two trackbars to allow adjustments
 def make_trackbar_outside(window):
     cv.createTrackbar("Slide for shoulder distance", window, 10, 20, lambda x: x)
-
 
 def make_trackbar_inside(window):
     cv.createTrackbar("Slide for distance from neck", window, 0, 20, lambda x: x)
@@ -108,14 +100,15 @@ def plot_points(img, point_list):
         int_y = int(y)
         image = cv.circle(img, (int_x,int_y), radius=1, color=(0,255,255), thickness=-1)
 
-
+# Calculate the median of data for more stable data
 def medianOfData(dataHist):
     dataHist = np.array(dataHist)
     outData = []
     for i in range(dataHist.shape[1]):
         dataColumn = dataHist[:,i]
-        testEl = dataColumn[0] # TODO Cant test len of a float
+        testEl = dataColumn[0]
 
+        # Some data points are ints, some are tuples, account for both cases
         if type(testEl) != type((1,1)):
             outData.append(np.median(dataColumn))
         else:
@@ -128,17 +121,16 @@ def medianOfData(dataHist):
 
     return outData
 
-cv.setMouseCallback(name, getMousePos)
-
 (grabbed, frame) = stream.read()
 cleanFrame = frame.copy()
 
-key = -1
-
+# Set up timer
 startTime = 0
 currTime = None
 circleColor = None
+SLOUCH_TIMER = 50
 
+# Set up data history
 dataHistory = []
 maxHistoryLength = 30
 
@@ -147,6 +139,7 @@ if not frame.size == 0:
 
 calibrated = False
 
+# Control loop to calibrate the initial colorBounds
 while(not calibrated):
     key = cv.waitKey(1) & 0xFF
 
@@ -183,11 +176,9 @@ while(not calibrated):
             break
 
         # if there are two reference points, then crop the region of interest
-        # from the image and display it
         if len(refPt) == 2:
             croppedImage = image[refPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
-            # cv.imshow("ROI", roi)
-            # cv.waitKey(0)
+
 
             croppedHSV = cv.cvtColor(croppedImage, cv.COLOR_BGR2HSV)
             minCroppedHSV = list(croppedHSV[0,0])
@@ -206,10 +197,8 @@ while(not calibrated):
                             minCroppedHSV[k] = val
                         if val > maxCroppedHSV[k]:
                             maxCroppedHSV[k] = val
-
-            # avgCroppedHSV = (minCroppedHSV + maxCroppedHSV) / 2
-
-            # print(croppedHSV.size)
+            # Find the median of the hue, and the max and mins of sat and val
+            # Set colorBounds accourdingly
             medHue = np.median(hues)
             minCroppedHSV[0] = medHue - 5
             maxCroppedHSV[0] = medHue + 5
@@ -229,21 +218,23 @@ while key != ESC:
     if togglePause:
         frame = cleanFrame.copy()
 
-    lower = np.array(colorBounds[0], dtype="uint8")
-    upper = np.array(colorBounds[1], dtype="uint8")
-
-    hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     make_trackbar_outside(name)
     make_trackbar_inside(name)
 
+    # Threshold image using colorBounds
+    lower = np.array(colorBounds[0], dtype="uint8")
+    upper = np.array(colorBounds[1], dtype="uint8")
+    hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     mask = cv.inRange(hsvFrame, lower, upper)
     # returns black and white mask
     maskedImg = cv.bitwise_and(frame, frame, mask=mask)
+
+    # Convert to grayscale for Haar Classifiers (face detection)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     cv.imshow("mask", mask)
 
     frameData = []
-
+    # Get eye positions
     eyeLoc1, eyeLoc2 = get_eyes(frame)
     noEyeData = False
     if eyeLoc1 == (0,0) and eyeLoc2 == (0,0):
@@ -252,6 +243,7 @@ while key != ESC:
         frameData.append(eyeLoc1)
         frameData.append(eyeLoc2)
 
+    # Get shoulder positions
     curr_x_scale = cv.getTrackbarPos("Slide for shoulder distance", name)
     curr_add_to_x = cv.getTrackbarPos("Slide for distance from neck", name)
     shoulderData = detectShoulders(gray, mask, curr_x_scale, curr_add_to_x)
@@ -263,6 +255,7 @@ while key != ESC:
         right_line, right_slope, left_line, left_slope, right_points, left_points = shoulderData
 
         if not (np.isnan((right_slope,left_slope)).any() or np.isnan(right_line).any() or np.isnan(left_line).any()):
+            # Extract necessary components for classification from shoulderData
             right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
             right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
             frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
@@ -271,8 +264,6 @@ while key != ESC:
             left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
             frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
 
-            # slopeDiff = right_slope - left_slope
-            # angleBetween = np.arctan2(slopeDiff,1) * 180 / math.pi
             plot_points(frame, right_points)
             plot_points(frame, left_points)
 
@@ -281,51 +272,52 @@ while key != ESC:
         else:
             noShoulderData = True
 
+    # Make sure frameData is valid
     if len(frameData) == 8:
         dataHistory += [frameData]
         if len(dataHistory) > maxHistoryLength:
             dataHistory.pop(0)
 
     if not classifier is None:
+        # Classify using median
         rollingMedian = medianOfData(dataHistory)
         classifier.newData(rollingMedian)
         slouchConfidence = classifier.classify()
 
+        # Display Slouch Level (confidence level)
         if not noShoulderData:
             cv.putText(frame, "Slouch Level: " + str(np.round(slouchConfidence, decimals = 3)), (50, 38),
                         cv.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
 
+        # Plot shoulder data points
         plot_points(frame, right_points)
         plot_points(frame, left_points)
 
+        # Display colored slouch indicator
         circleColor = (0,255,0)
         if slouchConfidence > 0.5:
             circleColor = (0,0,255)
         cv.circle(frame, (30, 30), 10, circleColor, -1)
 
+        # Display slouch meter
         cv.putText(frame, "Slouch Meter:", (20, frame.shape[0] - 17), cv.FONT_HERSHEY_SIMPLEX, 0.75, (255, 255, 255), 2)
         cv.line(frame, (200,frame.shape[0] - 20), (600,frame.shape[0] - 20), (255, 255, 255), 3)
         if not (startTime is None):
             cv.line(frame, (200,frame.shape[0] - 20), (200 + int(400 * (startTime+1)/SLOUCH_TIMER),frame.shape[0] - 20), (0, 0, 255), 3)
 
     if noShoulderData:
-        # can't find contours
+        # can't find face/shoulders
         startTime = None
         cv.putText(frame, "Can't find Face/Shoulders", (50, 38),
                     cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 255, 255), 2)
 
-    cursorBGR = [-1, -1, -1]
-    if mouseX != None and mouseX < len(frame[0]):
-        cursorHSV = hsvFrame[mouseY][mouseX]
-        cursorBGR = frame[mouseY][mouseX]
-    else:
-        cv.putText(frame, "cant find mouse", (10, 660), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
-    # need to convert thresholded image to BGR or else hstack cant stack the images (color img has 3 channel, gray has 1)
+    # Show the main image
     cv.imshow(name, frame)
-    # cv.imshow(name, frame)
 
+    # Calibrate the classifier
     if key == ord('c'):
+        # Make sure we have enough data to calibrate reliably
         if len(dataHistory) >= maxHistoryLength:
             calibratedMed = medianOfData(dataHistory)
 
@@ -340,11 +332,13 @@ while key != ESC:
 
         # if user presses C
 
+    # pause the feed
     if key == ord('p'):
         # if user presses P
         print("play/pause")
         togglePause = not togglePause
 
+    # Crop a new color
     if key == ord('x'):
         image = cleanFrame.copy()
         cv.namedWindow("image")
@@ -408,5 +402,5 @@ while key != ESC:
 
     key = cv.waitKey(1) & 0xFF
 
-
 cv.destroyAllWindows()
+print("Thanks for using Slouch Detector!    ")
