@@ -22,7 +22,7 @@ def highestWhite(gray, x, minY = 0):
     return None
 
 def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.75):
-    x_face, y_face, w_face, h_face = face; # define face components
+    x_face, y_face, w_face, h_face = face
     x_scale = raw_x_scale/20
     add_to_x = raw_add_to_x * 10
 
@@ -32,26 +32,27 @@ def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.
     w = int(x_scale * w_face)
     h = int(y_scale * h_face)
     y = y_face + h_face * HEIGHT_MULTIPLIER; # part way down head position
-    if(direction == "right"): x = x_face + w_face + add_to_x; # right end of the face box
-    if(direction == "left"): x = x_face - w - add_to_x; # w to the left of the start of face box
+    if(direction == "right"): x = x_face + w_face + add_to_x # right end of the face box
+    if(direction == "left"): x = x_face - w - add_to_x # w to the left of the start of face box
     rectangle = (x, y, w, h)
 
     # Find the shoulder for each x value by using the thresholded image
     x_positions = np.array([])
     y_positions = np.array([])
     for delta_x in range(w):
-        this_x = x + delta_x
+        currX = x + delta_x
         # Get the highest white value in each x slice
-        this_y = highestWhite(gray, this_x, minY = y_face + h_face/2)
-        if(this_y is None): continue; # Skip x slice if necessary
-        x_positions = np.append(x_positions, int(this_x))
-        y_positions = np.append(y_positions, int(this_y))
+        currY = highestWhite(gray, currX, minY = y_face + h_face/2)
+        if(currY is None): continue # Skip x slice if necessary
+        x_positions = np.append(x_positions, int(currX))
+        y_positions = np.append(y_positions, int(currY))
 
-    # extract line from positions
     if direction == "left":
         x_positions = np.flip(x_positions)
         y_positions = np.flip(y_positions)
+    # Stack positions to get coordinate pairs
     points = np.stack([x_positions,y_positions],axis = -1)
+
 
     # Use custom line detection to get the best line from points
     shoulderData = lineDetection.findBestFit(x_positions,y_positions,plot=False,low = 0.1)

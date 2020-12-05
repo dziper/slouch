@@ -5,3 +5,4 @@ https://www.pyimagesearch.com/2016/02/15/determining-object-color-with-opencv/
 https://pythonprogramming.net/haar-cascade-face-eye-detection-python-opencv-tutorial/
 https://docs.opencv.org/3.4/da/d6a/tutorial_trackbar.html
 https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_trackbar/py_trackbar.html
+https://www.guidodiepen.nl/2017/02/detecting-and-tracking-a-face-with-python-and-opencv/
