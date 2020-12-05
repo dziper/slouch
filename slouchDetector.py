@@ -393,7 +393,7 @@ while key != ESC:
     # Slouch alerts
     if circleColor == (0,255,0):
         startTime = 0
-    elif circleColor == (0,0,255) and startTime != None:
+    elif circleColor == (0,0,255) and startTime != None and not togglePause:
         startTime = startTime + 1
         if startTime >= SLOUCH_TIMER:
             pymsgbox.alert("Hey you! Stop slouching!")
@@ -403,4 +403,4 @@ while key != ESC:
     key = cv.waitKey(1) & 0xFF
 
 cv.destroyAllWindows()
-print("Thanks for using Slouch Detector!    ")
+print("Thanks for using Slouch Detector!")
