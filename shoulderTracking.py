@@ -1,6 +1,3 @@
-#Tutorial: https://www.guidodiepen.nl/2017/02/detecting-and-tracking-a-face-with-python-and-opencv/
-
-#Import the OpenCV library
 import cv2 as cv
 import numpy as np
 from scipy import stats
@@ -28,7 +25,6 @@ def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.
     x_face, y_face, w_face, h_face = face; # define face components
     x_scale = raw_x_scale/20
     add_to_x = raw_add_to_x * 10
-    # x_scale = 0.7
 
     HEIGHT_MULTIPLIER = 1
 
@@ -40,28 +36,24 @@ def detect_shoulder(gray, face, direction, raw_add_to_x, raw_x_scale, y_scale=0.
     if(direction == "left"): x = x_face - w - add_to_x; # w to the left of the start of face box
     rectangle = (x, y, w, h)
 
-    # calculate position of shoulder in each x strip
+    # Find the shoulder for each x value by using the thresholded image
     x_positions = np.array([])
     y_positions = np.array([])
     for delta_x in range(w):
         this_x = x + delta_x
-        # this_y = calculate_max_contrast_pixel(gray, this_x, y, h);
+        # Get the highest white value in each x slice
         this_y = highestWhite(gray, this_x, minY = y_face + h_face/2)
-        if(this_y is None): continue; # dont add if no clear best value
+        if(this_y is None): continue; # Skip x slice if necessary
         x_positions = np.append(x_positions, int(this_x))
         y_positions = np.append(y_positions, int(this_y))
 
     # extract line from positions
-    #line = [(x_positions[5], y_positions[5]), (x_positions[-10], y_positions[-10])];
     if direction == "left":
         x_positions = np.flip(x_positions)
         y_positions = np.flip(y_positions)
     points = np.stack([x_positions,y_positions],axis = -1)
 
-    # extract line of best fit from lines
-
-    # slope, intercept, r_value, p_value, std_err = stats.linregress(x_positions,y_positions)
-
+    # Use custom line detection to get the best line from points
     shoulderData = lineDetection.findBestFit(x_positions,y_positions,plot=False,low = 0.1)
     if shoulderData is None:
         return None
@@ -77,15 +69,15 @@ def plotPoints(img, pointList, color = (0,0,255)):
         img[y,x] = color
 
 def detectShoulders(gray, mask, scale, add_to_x):
-    #Now use the haar cascade detector to find all faces in the image
+    #Use Haar Cascade Classifier to find all faces in the image
     faces = faceCascade.detectMultiScale(gray, 1.3, 5)
     maxArea = 0
     x = 0
     y = 0
     w = 0
     h = 0
-    #Loop over all faces and check if the area for this face is
-    #the largest so far
+
+    # Find the largest face
     bigFace = None
     largestArea = -1
     for face in faces:
@@ -102,11 +94,7 @@ def detectShoulders(gray, mask, scale, add_to_x):
             bigFace = face
 
     if largestArea > 0:
-        # print("new frame")
-        # cv.rectangle(gray,  (bigFace[0]-10, bigFace[1]-20),(bigFace[0] + bigFace[2]+10 , bigFace[1] + bigFace[3]+20),rectangleColor,2)
-        lower = np.array(colorBounds[0], dtype="uint8")
-        upper = np.array(colorBounds[1], dtype="uint8")
-
+        # Use the face to find data points of the right and left shoulders
         rightShoulderData = detect_shoulder(mask, bigFace, "right", add_to_x, scale)
         leftShoulderData = detect_shoulder(mask, bigFace, "left", add_to_x, scale)
 
@@ -115,55 +103,8 @@ def detectShoulders(gray, mask, scale, add_to_x):
 
         right_line, right_slope, right_points = rightShoulderData
         left_line, left_slope, left_points = leftShoulderData
-
         return right_line, right_slope, left_line, left_slope, right_points, left_points
     else:
         pass
-        # print("No face")
-
+        # No face detected
     return None
-
-
-# stream = cv.VideoCapture(0)
-#
-# name = "frames"
-# cv.namedWindow(name)
-#
-# while True:
-#     grabbed, frame = stream.read()
-#     key = cv.waitKey(1) & 0xFF
-#
-#     lower = np.array(colorBounds[0], dtype="uint8")
-#     upper = np.array(colorBounds[1], dtype="uint8")
-#
-#     hsvFrame = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-#     mask = cv.inRange(hsvFrame, lower, upper)
-#
-#     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-#
-#     shoulderData = detectShoulders(gray, mask)
-#     noShoulderData = False
-#     if shoulderData is None:
-#         noShoulderData = True
-#     else:
-#         right_line, right_slope, left_line, left_slope = shoulderData
-#
-#         right_beginning = (int(right_line[0,0]),int(right_line[0,1]))
-#         right_end = (int(right_line[-1,0]),int(right_line[-1,1]))
-#         frame = cv.line(frame, right_beginning, right_end, (0,255,0), 3)
-#
-#         left_beginning = (int(left_line[0,0]),int(left_line[0,1]))
-#         left_end = (int(left_line[-1,0]),int(left_line[-1,1]))
-#         frame = cv.line(frame, left_beginning, left_end, (0,255,0), 3)
-#
-#         frame = cv.circle(frame, left_beginning, 5, (255,0,0))
-#
-#         print(right_slope)
-#         print(left_slope)
-#
-#     print("Hello")
-#
-#     cv.imshow(name, frame)
-#     cv.imshow("mask", mask)
-#
-# cv.destroyAllWindows()
