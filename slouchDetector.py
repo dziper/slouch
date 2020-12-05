@@ -92,7 +92,7 @@ def add_line_to_csv(filename, datalist):
         writer = csv.writer(currFile, delimiter=',', quotechar='"')
         writer.writerow(datalist)
 
-
+# Create two trackbars to allow adjustments
 def make_trackbar_outside(window):
     cv.createTrackbar("Slide for shoulder distance", window, 10, 20, lambda x: x)
 
@@ -100,7 +100,7 @@ def make_trackbar_outside(window):
 def make_trackbar_inside(window):
     cv.createTrackbar("Slide for distance from neck", window, 0, 20, lambda x: x)
 
-
+# Show the points being used for linear regression
 def plot_points(img, point_list):
     for (x,y) in point_list:
         int_x = int(x)
