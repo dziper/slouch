@@ -15,7 +15,7 @@ import math
 ESC = 27
 
 # need this line or else get weird abort when you run another popup
-pymsgbox.alert("Welcome to our Super Spicy Slouch Detector!", "Please take a look at the README file before proceeding.")
+pymsgbox.alert("Welcome to our Super Spicy Slouch Detector! \nPlease take a look at the README file before proceeding.")
 
 def click_n_crop(event, x, y, flags, param):
     # grab references to the global variables
@@ -135,7 +135,7 @@ cleanFrame = frame.copy()
 
 key = -1
 
-startTime = None
+startTime = 0
 currTime = None
 circleColor = None
 
