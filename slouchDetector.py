@@ -18,23 +18,23 @@ ESC = 27
 pymsgbox.alert("Welcome to our super spicy slouch detector! Please take a look at the README file before proceeding")
 
 def click_n_crop(event, x, y, flags, param):
-	# grab references to the global variables
-	global refPt, cropping
-	# if the left mouse button was clicked, record the starting
-	# (x, y) coordinates and indicate that cropping is being
-	# performed
-	if event == cv.EVENT_LBUTTONDOWN:
-		refPt = [(x, y)]
-		cropping = True
-	# check to see if the left mouse button was released
-	elif event == cv.EVENT_LBUTTONUP:
-		# record the ending (x, y) coordinates and indicate that
-		# the cropping operation is finished
-		refPt.append((x, y))
-		cropping = False
-		# draw a rectangle around the region of interest
-		cv.rectangle(frame, refPt[0], refPt[1], (0, 255, 0), 2)
-		cv.imshow("image", frame)
+    # grab references to the global variables
+    global refPt, cropping
+    # if the left mouse button was clicked, record the starting
+    # (x, y) coordinates and indicate that cropping is being
+    # performed
+    if event == cv.EVENT_LBUTTONDOWN:
+        refPt = [(x, y)]
+        cropping = True
+    # check to see if the left mouse button was released
+    elif event == cv.EVENT_LBUTTONUP:
+        # record the ending (x, y) coordinates and indicate that
+        # the cropping operation is finished
+        refPt.append((x, y))
+        cropping = False
+        # draw a rectangle around the region of interest
+        cv.rectangle(frame, refPt[0], refPt[1], (0, 255, 0), 2)
+    cv.imshow("image", frame)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-s", "--source", type=int, default=0, help="camera source")
